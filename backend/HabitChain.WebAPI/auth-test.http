@@ -1,0 +1,53 @@
+### Register a new user
+POST https://localhost:7000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "username": "testuser",
+  "firstName": "Test",
+  "lastName": "User",
+  "password": "TestPassword123!",
+  "confirmPassword": "TestPassword123!"
+}
+
+### Login with the user
+POST https://localhost:7000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "TestPassword123!"
+}
+
+### Get current user info (requires Authorization header)
+GET https://localhost:7000/api/auth/me
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### Refresh token
+POST https://localhost:7000/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "YOUR_REFRESH_TOKEN_HERE"
+}
+
+### Change password (requires Authorization header)
+POST https://localhost:7000/api/auth/change-password
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "currentPassword": "TestPassword123!",
+  "newPassword": "NewPassword123!",
+  "confirmNewPassword": "NewPassword123!"
+}
+
+### Revoke refresh token (requires Authorization header)
+POST https://localhost:7000/api/auth/revoke
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "refreshToken": "YOUR_REFRESH_TOKEN_HERE"
+} 

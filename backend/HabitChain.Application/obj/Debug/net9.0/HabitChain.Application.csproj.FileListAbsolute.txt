@@ -1,0 +1,16 @@
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/bin/Debug/net9.0/HabitChain.Application.deps.json
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/bin/Debug/net9.0/HabitChain.Application.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/bin/Debug/net9.0/HabitChain.Application.pdb
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/bin/Debug/net9.0/HabitChain.Domain.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/bin/Debug/net9.0/HabitChain.Domain.pdb
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/obj/Debug/net9.0/HabitChain.Application.csproj.AssemblyReference.cache
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/obj/Debug/net9.0/HabitChain.Application.GeneratedMSBuildEditorConfig.editorconfig
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/obj/Debug/net9.0/HabitChain.Application.AssemblyInfoInputs.cache
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/obj/Debug/net9.0/HabitChain.Application.AssemblyInfo.cs
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/obj/Debug/net9.0/HabitChain.Application.csproj.CoreCompileInputs.cache
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/obj/Debug/net9.0/HabitChain.Application.sourcelink.json
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/obj/Debug/net9.0/HabitCha.B0B41C48.Up2Date
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/obj/Debug/net9.0/HabitChain.Application.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/obj/Debug/net9.0/refint/HabitChain.Application.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/obj/Debug/net9.0/HabitChain.Application.pdb
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Application/obj/Debug/net9.0/ref/HabitChain.Application.dll

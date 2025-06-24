@@ -1,0 +1,296 @@
+.badge-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 24px;
+  border: 2px solid #e9ecef;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.badge-card.clickable {
+  cursor: pointer;
+}
+
+.badge-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.badge-card.earned {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.badge-card.locked {
+  border-color: #6c757d;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  opacity: 0.8;
+}
+
+.badge-card.small {
+  padding: 16px;
+}
+
+.badge-card.small .badge-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+}
+
+.badge-card.small .badge-name {
+  font-size: 1.1rem;
+}
+
+.badge-card.small .badge-description {
+  font-size: 0.85rem;
+}
+
+.badge-card.large {
+  padding: 32px;
+}
+
+.badge-card.large .badge-icon {
+  width: 80px;
+  height: 80px;
+  font-size: 2.5rem;
+}
+
+.badge-card.large .badge-name {
+  font-size: 1.8rem;
+}
+
+.badge-card.large .badge-description {
+  font-size: 1.1rem;
+}
+
+.badge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.badge-icon {
+  font-size: 2rem;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.badge-rarity {
+  display: flex;
+  align-items: center;
+}
+
+.rarity-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.badge-content {
+  margin-bottom: 16px;
+}
+
+.badge-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.badge-description {
+  color: #6c757d;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.badge-category {
+  margin-bottom: 16px;
+}
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #495057;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.badge-earned {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.earned-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #28a745;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.earned-date {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.badge-progress {
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 500;
+  text-align: center;
+}
+
+.badge-locked {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.locked-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #6c757d;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 12px;
+}
+
+.badge-card.clickable:hover .badge-overlay {
+  opacity: 1;
+}
+
+.overlay-text {
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .badge-card {
+    padding: 16px;
+  }
+
+  .badge-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .badge-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+
+  .badge-name {
+    font-size: 1.3rem;
+  }
+
+  .badge-description {
+    font-size: 0.9rem;
+  }
+
+  .category-badge {
+    font-size: 0.75rem;
+  }
+
+  .earned-badge,
+  .locked-text {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .badge-card {
+    padding: 12px;
+  }
+
+  .badge-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .badge-name {
+    font-size: 1.1rem;
+  }
+
+  .badge-description {
+    font-size: 0.85rem;
+  }
+
+  .rarity-badge {
+    font-size: 0.65rem;
+  }
+} 

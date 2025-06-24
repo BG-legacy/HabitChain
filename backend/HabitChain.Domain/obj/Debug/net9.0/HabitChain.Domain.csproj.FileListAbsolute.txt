@@ -1,0 +1,13 @@
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/bin/Debug/net9.0/HabitChain.Domain.deps.json
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/bin/Debug/net9.0/HabitChain.Domain.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/bin/Debug/net9.0/HabitChain.Domain.pdb
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/obj/Debug/net9.0/HabitChain.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/obj/Debug/net9.0/HabitChain.Domain.AssemblyInfoInputs.cache
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/obj/Debug/net9.0/HabitChain.Domain.AssemblyInfo.cs
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/obj/Debug/net9.0/HabitChain.Domain.csproj.CoreCompileInputs.cache
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/obj/Debug/net9.0/HabitChain.Domain.sourcelink.json
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/obj/Debug/net9.0/HabitChain.Domain.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/obj/Debug/net9.0/refint/HabitChain.Domain.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/obj/Debug/net9.0/HabitChain.Domain.pdb
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/obj/Debug/net9.0/ref/HabitChain.Domain.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Domain/obj/Debug/net9.0/HabitChain.Domain.csproj.AssemblyReference.cache

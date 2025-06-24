@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "rrw4B1KMRxA/XxE2c10lq5ahgmKPtRpewrgs32SKt7A=",
+  "Source": "HabitChain.WebAPI",
+  "BasePath": "_content/HabitChain.WebAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

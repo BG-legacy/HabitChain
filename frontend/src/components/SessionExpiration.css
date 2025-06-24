@@ -1,0 +1,185 @@
+/* Session Expiration Overlay */
+.session-expiration-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.session-expiration-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 400px;
+  width: 100%;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Session Expiration Header */
+.session-expiration-header {
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.session-expiration-header h3 {
+  color: #e53e3e;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.session-expiration-timer {
+  color: #e53e3e;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: #fed7d7;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  display: inline-block;
+}
+
+/* Session Expiration Content */
+.session-expiration-content {
+  padding: 1rem 1.5rem;
+}
+
+.session-expiration-content p {
+  color: #4a5568;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0;
+  text-align: center;
+}
+
+/* Session Expiration Actions */
+.session-expiration-actions {
+  padding: 1rem 1.5rem 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.session-extend-button,
+.session-logout-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-width: 120px;
+}
+
+.session-extend-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.session-extend-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.session-logout-button {
+  background: #e2e8f0;
+  color: #4a5568;
+  border: 1px solid #cbd5e0;
+}
+
+.session-logout-button:hover {
+  background: #cbd5e0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.session-extend-button:active,
+.session-logout-button:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .session-expiration-overlay {
+    padding: 0.5rem;
+  }
+  
+  .session-expiration-modal {
+    margin: 0;
+  }
+  
+  .session-expiration-header,
+  .session-expiration-content,
+  .session-expiration-actions {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .session-expiration-actions {
+    flex-direction: column;
+  }
+  
+  .session-extend-button,
+  .session-logout-button {
+    width: 100%;
+  }
+}
+
+/* Focus styles for accessibility */
+.session-extend-button:focus,
+.session-logout-button:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .session-expiration-modal {
+    border: 2px solid #000;
+  }
+  
+  .session-expiration-header {
+    border-bottom-color: #000;
+  }
+  
+  .session-extend-button,
+  .session-logout-button {
+    border: 2px solid #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .session-expiration-modal {
+    animation: none;
+  }
+  
+  .session-extend-button,
+  .session-logout-button {
+    transition: none;
+  }
+  
+  .session-extend-button:hover,
+  .session-logout-button:hover {
+    transform: none;
+  }
+} 
