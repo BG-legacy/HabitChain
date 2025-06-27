@@ -171,20 +171,38 @@ public class HabitsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<HabitDto>> CreateHabit([FromBody] CreateHabitDto createHabitDto)
     {
-        if (!ModelState.IsValid)
+        // Debug: Log all claims in the token
+        Console.WriteLine("=== JWT TOKEN CLAIMS DEBUG ===");
+        foreach (var claim in User.Claims)
         {
-            return BadRequest(ModelState);
+            Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
         }
+        Console.WriteLine("===============================");
 
-        // Extract authenticated user ID and set it in the DTO
+        // Extract authenticated user ID and set it in the DTO BEFORE validation
         var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        Console.WriteLine($"Extracted UserId from NameIdentifier claim: '{authenticatedUserId}'");
+        
         if (string.IsNullOrEmpty(authenticatedUserId))
         {
+            Console.WriteLine("ERROR: authenticatedUserId is null or empty");
             return Unauthorized(new { message = "User not authenticated." });
         }
 
         // Set the user ID from the JWT token (override any provided value for security)
         createHabitDto.UserId = authenticatedUserId;
+        Console.WriteLine($"Set createHabitDto.UserId to: '{createHabitDto.UserId}'");
+
+        // Now validate the model state after setting the UserId
+        if (!ModelState.IsValid)
+        {
+            Console.WriteLine("ModelState validation failed:");
+            foreach (var error in ModelState)
+            {
+                Console.WriteLine($"Field: {error.Key}, Errors: {string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage))}");
+            }
+            return BadRequest(ModelState);
+        }
 
         var habit = await _habitService.CreateHabitAsync(createHabitDto);
         return CreatedAtAction(nameof(GetHabitById), new { id = habit.Id }, habit);
@@ -205,6 +223,17 @@ public class HabitsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<HabitDto>> UpdateHabit(Guid id, [FromBody] CreateHabitDto updateHabitDto)
     {
+        // Extract authenticated user ID and set it in the DTO BEFORE validation
+        var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(authenticatedUserId))
+        {
+            return Unauthorized(new { message = "User not authenticated." });
+        }
+
+        // Set the user ID from the JWT token for security
+        updateHabitDto.UserId = authenticatedUserId;
+
+        // Now validate the model state after setting the UserId
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -212,16 +241,6 @@ public class HabitsController : ControllerBase
 
         try
         {
-            // Extract authenticated user ID and set it in the DTO
-            var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(authenticatedUserId))
-            {
-                return Unauthorized(new { message = "User not authenticated." });
-            }
-
-            // Set the user ID from the JWT token for security
-            updateHabitDto.UserId = authenticatedUserId;
-
             var habit = await _habitService.UpdateHabitAsync(id, updateHabitDto);
             return Ok(habit);
         }

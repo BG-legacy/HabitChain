@@ -13,8 +13,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using AutoMapper;
+using DotNetEnv;
+
+// Load environment variables from .env file
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add environment variables to configuration
+builder.Configuration.AddEnvironmentVariables();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -24,8 +31,18 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Add Entity Framework with PostgreSQL
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Override with environment variables if available
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+var dbName = Environment.GetEnvironmentVariable(builder.Environment.IsDevelopment() ? "DEV_DB_NAME" : "DB_NAME") ?? 
+             (builder.Environment.IsDevelopment() ? "HabitChainDb_Dev" : "HabitChainDb");
+var dbUser = Environment.GetEnvironmentVariable("DB_USERNAME") ?? "postgres";
+var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "postgres";
+
+connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPassword}";
+
 builder.Services.AddDbContext<HabitChainDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // Add ASP.NET Identity
 builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -53,9 +70,15 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 
 // Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
-var issuer = jwtSettings["Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
-var audience = jwtSettings["Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured");
+var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
+               jwtSettings["SecretKey"] ?? 
+               throw new InvalidOperationException("JWT SecretKey is not configured");
+var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? 
+            jwtSettings["Issuer"] ?? 
+            throw new InvalidOperationException("JWT Issuer is not configured");
+var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? 
+              jwtSettings["Audience"] ?? 
+              throw new InvalidOperationException("JWT Audience is not configured");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -99,6 +122,7 @@ builder.Services.AddScoped<IBadgeService, BadgeService>();
 builder.Services.AddScoped<IUserBadgeService, UserBadgeService>();
 builder.Services.AddScoped<ICheckInService, CheckInService>();
 builder.Services.AddScoped<IEncouragementService, EncouragementService>();
+builder.Services.AddScoped<IAiRecommendationService, AiRecommendationService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -131,7 +155,11 @@ if (app.Environment.IsDevelopment())
     mapper.ConfigurationProvider.AssertConfigurationIsValid();
 }
 
-app.UseHttpsRedirection();
+// Configure HTTPS redirection (only in production)
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors("AllowAll");
 

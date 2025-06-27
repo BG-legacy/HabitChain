@@ -18,6 +18,7 @@ import Encouragements from './components/Encouragements';
 import Badges from './components/Badges';
 import Calendar from './components/Calendar';
 import Export from './components/Export';
+import AiRecommendationsPage from './components/AiRecommendationsPage';
 import SessionExpiration from './components/SessionExpiration';
 import './App.css';
 
@@ -138,21 +139,7 @@ const Layout: React.FC = () => {
                 path="/ai-recommendations" 
                 element={
                   <ProtectedRoute>
-                    <PageTransition>
-                      <div className="main-container">
-                        <div className="page-header">
-                          <h1 className="page-title">AI Recommendations</h1>
-                          <p className="page-subtitle">Get personalized habit suggestions and insights</p>
-                        </div>
-                        <div className="glass-card p-lg">
-                          <div className="empty-state">
-                            <div className="empty-icon">🤖</div>
-                            <h3 className="empty-title">AI Recommendations</h3>
-                            <p className="empty-description">AI-powered habit recommendations and insights are coming soon. Get personalized suggestions to improve your habit-building journey.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </PageTransition>
+                    <AiRecommendationsPage />
                   </ProtectedRoute>
                 } 
               />

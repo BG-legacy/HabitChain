@@ -153,3 +153,8 @@
 /Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.WebAPI/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 /Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.WebAPI/bin/Debug/net9.0/Microsoft.IdentityModel.Tokens.dll
 /Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.WebAPI/bin/Debug/net9.0/System.IdentityModel.Tokens.Jwt.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.WebAPI/bin/Debug/net9.0/DotNetEnv.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.WebAPI/bin/Debug/net9.0/OpenAI.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.WebAPI/bin/Debug/net9.0/Sprache.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.WebAPI/bin/Debug/net9.0/System.ClientModel.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.WebAPI/bin/Debug/net9.0/System.Memory.Data.dll

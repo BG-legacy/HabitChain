@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './CheckIn.css';
+import { ApiService } from '../services/api';
 
 interface Habit {
   id: string;
@@ -46,16 +47,36 @@ const CheckIn: React.FC = () => {
     }
   }, [searchParams]);
 
+  // Convert backend enum values to frontend string values
+  const convertFrequencyToString = (frequency: number): string => {
+    const frequencyMap: { [key: number]: string } = {
+      1: 'Daily',
+      2: 'Weekly', 
+      3: 'Monthly',
+      4: 'Custom'
+    };
+    return frequencyMap[frequency] || 'Daily';
+  };
+
   const fetchHabits = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/habits');
-      // const data = await response.json();
+      if (!user?.id) {
+        setHabits([]);
+        return;
+      }
       
-      // Initialize with empty data
-      setHabits([]);
+      const data = await ApiService.get<any[]>(`/habits/user/${user.id}/active`);
+      
+      // Convert frequency enum values to strings for frontend
+      const convertedHabits = data.map(habit => ({
+        ...habit,
+        frequency: convertFrequencyToString(habit.frequency)
+      }));
+      
+      setHabits(convertedHabits);
     } catch (error) {
-      console.error('Error fetching habits:', error);
+      console.error('Error fetching active habits:', error);
+      setHabits([]);
     } finally {
       setLoading(false);
     }
@@ -85,17 +106,21 @@ const CheckIn: React.FC = () => {
     setSubmitting(true);
     
     try {
-      // TODO: Replace with actual API call
-      // await fetch('/api/check-ins', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(checkInData)
-      // });
+      // Submit check-in to API
+      const response = await fetch('/api/check-ins', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(checkInData)
+      });
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSuccess(true);
+      if (response.ok) {
+        setSuccess(true);
+      } else {
+        throw new Error('Failed to submit check-in');
+      }
       
       // Reset form after success
       setTimeout(() => {

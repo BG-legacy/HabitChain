@@ -27,7 +27,6 @@ public class CreateHabitDto
     /// <summary>
     /// The ID of the user who owns this habit (set automatically from JWT token)
     /// </summary>
-    [Required(ErrorMessage = "User ID is required.")]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>

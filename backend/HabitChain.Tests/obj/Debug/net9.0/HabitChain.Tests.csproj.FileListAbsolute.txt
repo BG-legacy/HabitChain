@@ -133,3 +133,6 @@
 /Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Tests/obj/Debug/net9.0/HabitChain.Tests.pdb
 /Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Tests/obj/Debug/net9.0/HabitChain.Tests.genruntimeconfig.cache
 /Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Tests/obj/Debug/net9.0/ref/HabitChain.Tests.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Tests/bin/Debug/net9.0/OpenAI.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Tests/bin/Debug/net9.0/System.ClientModel.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.Tests/bin/Debug/net9.0/System.Memory.Data.dll

@@ -15,6 +15,7 @@ import {
   slideInFromRight
 } from './AnimatedComponents';
 import './Dashboard.css';
+import { ApiService } from '../services/api';
 
 interface Habit {
   id: string;
@@ -48,19 +49,43 @@ const Dashboard: React.FC = () => {
     fetchDashboardData();
   }, []);
 
+  // Convert backend enum values to frontend string values
+  const convertFrequencyToString = (frequency: number): string => {
+    const frequencyMap: { [key: number]: string } = {
+      1: 'Daily',
+      2: 'Weekly', 
+      3: 'Monthly',
+      4: 'Custom'
+    };
+    return frequencyMap[frequency] || 'Daily';
+  };
+
   const fetchDashboardData = async () => {
     try {
-      // TODO: Replace with actual API calls
-      // const habitsResponse = await fetch('/api/habits');
-      // const statsResponse = await fetch('/api/dashboard/stats');
+      if (!user?.id) return;
+
+      const data = await ApiService.get<any[]>(`/habits/user/${user.id}`);
       
-      // Initialize with empty data
-      setHabits([]);
+      // Convert frequency enum values to strings for frontend
+      const convertedHabits = data.map(habit => ({
+        ...habit,
+        frequency: convertFrequencyToString(habit.frequency)
+      }));
+      
+      setHabits(convertedHabits);
+      
+      // Calculate stats from habits data
+      const activeHabits = convertedHabits.filter((h: any) => h.isActive);
+      const totalCheckIns = convertedHabits.reduce((sum: number, h: any) => sum + (h.totalCheckIns || 0), 0);
+      const activeStreaks = convertedHabits.reduce((sum: number, h: any) => sum + (h.currentStreak > 0 ? 1 : 0), 0);
+      const completionRate = convertedHabits.length > 0 ? 
+        (activeStreaks / convertedHabits.length) * 100 : 0;
+      
       setStats({
-        totalHabits: 0,
-        activeStreaks: 0,
-        totalCheckIns: 0,
-        completionRate: 0
+        totalHabits: convertedHabits.length,
+        activeStreaks: activeStreaks,
+        totalCheckIns: totalCheckIns,
+        completionRate: Math.round(completionRate)
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);

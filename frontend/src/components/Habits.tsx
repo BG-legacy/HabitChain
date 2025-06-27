@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { ApiService } from '../services/api';
 import './Habits.css';
 
 interface Habit {
@@ -38,6 +39,17 @@ const Habits: React.FC = () => {
     targetDays: 1
   });
 
+  // Convert backend enum values to frontend string values
+  const convertFrequencyToString = (frequency: number): string => {
+    const frequencyMap: { [key: number]: string } = {
+      1: 'Daily',
+      2: 'Weekly', 
+      3: 'Monthly',
+      4: 'Custom'
+    };
+    return frequencyMap[frequency] || 'Daily';
+  };
+
   useEffect(() => {
     fetchHabits();
     if (id) {
@@ -47,14 +59,25 @@ const Habits: React.FC = () => {
 
   const fetchHabits = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/habits');
-      // const data = await response.json();
+      if (!user?.id) {
+        setHabits([]);
+        return;
+      }
       
-      // Initialize with empty data
-      setHabits([]);
+      // Use ApiService instead of direct fetch
+      const data = await ApiService.get<any[]>(`/habits/user/${user.id}`);
+      
+      // Convert frequency enum values to strings for frontend
+      const convertedHabits = data.map(habit => ({
+        ...habit,
+        frequency: convertFrequencyToString(habit.frequency),
+        targetDays: 1 // Default value since backend doesn't have this field
+      }));
+      
+      setHabits(convertedHabits);
     } catch (error) {
       console.error('Error fetching habits:', error);
+      setHabits([]);
     } finally {
       setLoading(false);
     }
@@ -62,10 +85,26 @@ const Habits: React.FC = () => {
 
   const fetchHabitById = async (habitId: string) => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/habits/${habitId}`);
-      // const habit = await response.json();
+      const habit = await ApiService.get<any>(`/habits/${habitId}`);
       
+      // Convert frequency enum to string for frontend
+      const convertedHabit = {
+        ...habit,
+        frequency: convertFrequencyToString(habit.frequency),
+        targetDays: 1 // Default value since backend doesn't have this field
+      };
+      
+      setEditingHabit(convertedHabit);
+      setFormData({
+        name: convertedHabit.name,
+        description: convertedHabit.description,
+        frequency: convertedHabit.frequency,
+        targetDays: convertedHabit.targetDays
+      });
+      setShowForm(true);
+    } catch (error) {
+      console.error('Error fetching habit:', error);
+      // Fallback to local data
       const habit = habits.find(h => h.id === habitId);
       if (habit) {
         setEditingHabit(habit);
@@ -77,8 +116,6 @@ const Habits: React.FC = () => {
         });
         setShowForm(true);
       }
-    } catch (error) {
-      console.error('Error fetching habit:', error);
     }
   };
 
@@ -94,46 +131,101 @@ const Habits: React.FC = () => {
     e.preventDefault();
     
     try {
+      // Check if user is authenticated
+      console.log('Current user:', user);
+      console.log('Access token:', localStorage.getItem('accessToken') ? 'Present' : 'Missing');
+      
+      // Basic frontend validation to help debug
+      if (!formData.name || formData.name.length < 3) {
+        alert('Habit name must be at least 3 characters long');
+        return;
+      }
+      
+      if (formData.name.length > 100) {
+        alert('Habit name cannot exceed 100 characters');
+        return;
+      }
+      
+      // Check for potentially problematic characters
+      const namePattern = /^[a-zA-Z0-9\s\-_]+$/;
+      if (!namePattern.test(formData.name)) {
+        alert('Habit name can only contain letters, numbers, spaces, hyphens, and underscores. Please check for special characters.');
+        return;
+      }
+      
+      if (formData.description && formData.description.length > 500) {
+        alert('Description cannot exceed 500 characters');
+        return;
+      }
+      
+      // Convert string frequency to enum value
+      const frequencyMap: { [key: string]: number } = {
+        'Daily': 1,
+        'Weekly': 2,
+        'Monthly': 3,
+        'Custom': 4
+      };
+
+      // Prepare data for API - match CreateHabitDto structure
+      const habitData = {
+        name: formData.name.trim(),
+        description: formData.description?.trim() || '',
+        frequency: frequencyMap[formData.frequency] || 1, // Default to Daily if not found
+        // UserId will be set automatically from JWT token in the backend
+        // Don't include targetDays as it's not part of CreateHabitDto
+      };
+
+      console.log('Submitting habit data:', habitData); // Debug log
+
       if (editingHabit) {
-        // TODO: Replace with actual API call
-        // await fetch(`/api/habits/${editingHabit.id}`, {
-        //   method: 'PUT',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(formData)
-        // });
+        // Update existing habit
+        const updatedHabit = await ApiService.put<any>(`/habits/${editingHabit.id}`, habitData);
         
-        // Update local state
-        setHabits(prev => prev.map(habit => 
-          habit.id === editingHabit.id 
-            ? { ...habit, ...formData }
-            : habit
-        ));
-      } else {
-        // TODO: Replace with actual API call
-        // const response = await fetch('/api/habits', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(formData)
-        // });
-        // const newHabit = await response.json();
-        
-        // Add to local state
-        const newHabit: Habit = {
-          id: Date.now().toString(),
-          ...formData,
-          currentStreak: 0,
-          longestStreak: 0,
-          totalCheckIns: 0,
-          createdAt: new Date().toISOString(),
-          isActive: true
+        // Convert the response back to frontend format
+        const convertedHabit = {
+          ...updatedHabit,
+          frequency: convertFrequencyToString(updatedHabit.frequency),
+          targetDays: 1
         };
         
-        setHabits(prev => [...prev, newHabit]);
+        setHabits(prev => prev.map(habit => 
+          habit.id === editingHabit.id ? convertedHabit : habit
+        ));
+      } else {
+        // Create new habit
+        const newHabit = await ApiService.post<any>('/habits', habitData);
+        
+        // Convert the response back to frontend format
+        const convertedHabit = {
+          ...newHabit,
+          frequency: convertFrequencyToString(newHabit.frequency),
+          targetDays: 1
+        };
+        
+        setHabits(prev => [...prev, convertedHabit]);
       }
       
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving habit:', error);
+      
+      // Show detailed error information
+      if (error.response?.data) {
+        console.error('Full API Error Response:', JSON.stringify(error.response.data, null, 2));
+        
+        // If there are validation errors, show them
+        if (error.response.data.errors) {
+          console.error('Validation Errors:', error.response.data.errors);
+          const errorMessages = Object.entries(error.response.data.errors)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+            .join('\n');
+          alert(`Validation Errors:\n${errorMessages}`);
+        } else {
+          alert(`Failed to save habit: ${error.response.data.title || error.response.data.message || 'Unknown error'}`);
+        }
+      } else {
+        alert('Failed to save habit. Please try again.');
+      }
     }
   };
 
@@ -143,12 +235,11 @@ const Habits: React.FC = () => {
     }
     
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`/api/habits/${habitId}`, { method: 'DELETE' });
-      
+      await ApiService.delete(`/habits/${habitId}`);
       setHabits(prev => prev.filter(habit => habit.id !== habitId));
     } catch (error) {
       console.error('Error deleting habit:', error);
+      alert('Failed to delete habit. Please try again.');
     }
   };
 

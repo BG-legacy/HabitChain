@@ -55,6 +55,10 @@
             "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.5, )"
+            },
+            "OpenAI": {
+              "target": "Package",
+              "version": "[2.0.0, )"
             }
           },
           "imports": [

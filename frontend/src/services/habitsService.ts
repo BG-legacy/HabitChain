@@ -66,13 +66,18 @@ export enum HabitFrequency {
 // Habits Service
 export class HabitsService {
   // Get all habits for the current user
-  static async getHabits(): Promise<Habit[]> {
-    return ApiService.get<Habit[]>('/habits');
+  static async getHabits(userId: string): Promise<Habit[]> {
+    return ApiService.get<Habit[]>(`/habits/user/${userId}`);
   }
 
   // Get a specific habit by ID
   static async getHabit(id: string): Promise<Habit> {
     return ApiService.get<Habit>(`/habits/${id}`);
+  }
+
+  // Get active habits for the current user
+  static async getActiveHabits(userId: string): Promise<Habit[]> {
+    return ApiService.get<Habit[]>(`/habits/user/${userId}/active`);
   }
 
   // Create a new habit
