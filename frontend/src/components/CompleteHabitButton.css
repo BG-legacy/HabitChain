@@ -1,0 +1,170 @@
+.complete-habit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.complete-habit-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Size variants */
+.complete-habit-btn.small {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+}
+
+.complete-habit-btn.medium {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  border-radius: 8px;
+}
+
+.complete-habit-btn.large {
+  padding: 12px 24px;
+  font-size: 1rem;
+  border-radius: 10px;
+}
+
+/* Style variants */
+.complete-habit-btn.default {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.complete-habit-btn.default:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+
+.complete-habit-btn.minimal {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.complete-habit-btn.minimal:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.complete-habit-btn.outlined {
+  background: transparent;
+  color: #059669;
+  border: 2px solid #10b981;
+}
+
+.complete-habit-btn.outlined:hover:not(:disabled) {
+  background: #10b981;
+  color: white;
+}
+
+/* Completed state */
+.complete-habit-btn.completed {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.complete-habit-btn.completed.default {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  box-shadow: 0 2px 4px rgba(167, 243, 208, 0.3);
+}
+
+.complete-habit-btn.completed:hover {
+  transform: none;
+  box-shadow: 0 2px 4px rgba(167, 243, 208, 0.3);
+}
+
+/* Icon and text styles */
+.btn-icon {
+  font-size: 1em;
+  line-height: 1;
+}
+
+.btn-text {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Loading animation */
+.complete-habit-btn .btn-icon {
+  transition: transform 0.2s ease;
+}
+
+.complete-habit-btn:disabled .btn-icon {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+}
+
+/* Focus states */
+.complete-habit-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.complete-habit-btn:focus:not(:disabled) {
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2), 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .complete-habit-btn.large {
+    padding: 10px 20px;
+    font-size: 0.875rem;
+  }
+  
+  .complete-habit-btn.medium {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+  
+  .complete-habit-btn.small {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .complete-habit-btn.completed {
+    background: rgba(16, 185, 129, 0.2);
+    color: #a7f3d0;
+    border-color: rgba(167, 243, 208, 0.3);
+  }
+  
+  .complete-habit-btn.minimal {
+    background: rgba(16, 185, 129, 0.15);
+    color: #a7f3d0;
+    border-color: rgba(167, 243, 208, 0.3);
+  }
+  
+  .complete-habit-btn.outlined {
+    color: #a7f3d0;
+    border-color: #10b981;
+  }
+} 

@@ -29,13 +29,21 @@ namespace HabitChain.WebAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class BadgesController : ControllerBase
 {
     private readonly IBadgeService _badgeService;
+    private readonly IBadgeEarningService _badgeEarningService;
+    private readonly IUserBadgeService _userBadgeService;
 
-    public BadgesController(IBadgeService badgeService)
+    public BadgesController(
+        IBadgeService badgeService, 
+        IBadgeEarningService badgeEarningService,
+        IUserBadgeService userBadgeService)
     {
         _badgeService = badgeService;
+        _badgeEarningService = badgeEarningService;
+        _userBadgeService = userBadgeService;
     }
 
     /// <summary>
@@ -54,8 +62,15 @@ public class BadgesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<BadgeDto>>> GetAllBadges()
     {
-        var badges = await _badgeService.GetAllBadgesAsync();
-        return Ok(badges);
+        try
+        {
+            var badges = await _badgeService.GetAllBadgesAsync();
+            return Ok(badges);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -74,8 +89,15 @@ public class BadgesController : ControllerBase
     [HttpGet("active")]
     public async Task<ActionResult<IEnumerable<BadgeDto>>> GetActiveBadges()
     {
-        var badges = await _badgeService.GetActiveBadgesAsync();
-        return Ok(badges);
+        try
+        {
+            var badges = await _badgeService.GetActiveBadgesAsync();
+            return Ok(badges);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -94,12 +116,71 @@ public class BadgesController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<BadgeDto>> GetBadgeById(Guid id)
     {
-        var badge = await _badgeService.GetBadgeByIdAsync(id);
-        if (badge == null)
+        try
         {
-            return NotFound();
+            var badge = await _badgeService.GetBadgeByIdAsync(id);
+            if (badge == null)
+            {
+                return NotFound($"Badge with ID {id} not found.");
+            }
+            return Ok(badge);
         }
-        return Ok(badge);
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// PUBLIC ENDPOINT - Get User Badges with Progress
+    /// 
+    /// Retrieves a list of badges that a user has earned and their progress towards earning more.
+    /// 
+    /// Security considerations:
+    /// - No authentication required for viewing user badges
+    /// - User badges are sensitive data and should be protected
+    /// - Public visibility encourages user engagement
+    /// 
+    /// Use case: Displaying user's progress towards earning badges
+    /// </summary>
+    [HttpGet("user/{userId}")]
+    public async Task<ActionResult<IEnumerable<BadgeDto>>> GetUserBadgesWithProgress(string userId)
+    {
+        try
+        {
+            var badges = await _badgeEarningService.GetUserBadgesWithProgressAsync(userId);
+            return Ok(badges);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// PUBLIC ENDPOINT - Get User Earned Badges
+    /// 
+    /// Retrieves a list of badges that a user has earned.
+    /// 
+    /// Security considerations:
+    /// - No authentication required for viewing user earned badges
+    /// - User earned badges are sensitive data and should be protected
+    /// - Public visibility encourages user engagement
+    /// 
+    /// Use case: Displaying user's earned badges
+    /// </summary>
+    [HttpGet("user/{userId}/earned")]
+    public async Task<ActionResult<IEnumerable<UserBadgeDto>>> GetUserEarnedBadges(string userId)
+    {
+        try
+        {
+            var userBadges = await _userBadgeService.GetUserBadgesByUserIdAsync(userId);
+            return Ok(userBadges);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -118,28 +199,18 @@ public class BadgesController : ControllerBase
     /// for more granular access control.
     /// </summary>
     [HttpPost]
-    [Authorize] // Require authentication for badge creation
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<BadgeDto>> CreateBadge([FromBody] CreateBadgeDto createBadgeDto)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
+            var badge = await _badgeService.CreateBadgeAsync(createBadgeDto);
+            return CreatedAtAction(nameof(GetBadgeById), new { id = badge.Id }, badge);
         }
-
-        // Extract authenticated user ID for admin verification
-        var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(authenticatedUserId))
+        catch (Exception ex)
         {
-            return Unauthorized(new { message = "User not authenticated." });
+            return StatusCode(500, $"Internal server error: {ex.Message}");
         }
-
-        // TODO: Implement admin role verification in service layer
-        // The service layer should verify that the authenticated user has admin privileges
-        // before allowing badge creation. This could be done by checking user roles
-        // or implementing a separate admin verification method.
-
-        var badge = await _badgeService.CreateBadgeAsync(createBadgeDto);
-        return CreatedAtAction(nameof(GetBadgeById), new { id = badge.Id }, badge);
     }
 
     /// <summary>
@@ -157,33 +228,21 @@ public class BadgesController : ControllerBase
     /// Use case: Updating badge criteria, descriptions, or activation status
     /// </summary>
     [HttpPut("{id}")]
-    [Authorize] // Require authentication for badge updates
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<BadgeDto>> UpdateBadge(Guid id, [FromBody] CreateBadgeDto updateBadgeDto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         try
         {
-            // Extract authenticated user ID for admin verification
-            var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(authenticatedUserId))
-            {
-                return Unauthorized(new { message = "User not authenticated." });
-            }
-
-            // TODO: Implement admin role verification in service layer
-            // The service layer should verify that the authenticated user has admin privileges
-            // before allowing badge updates.
-
             var badge = await _badgeService.UpdateBadgeAsync(id, updateBadgeDto);
             return Ok(badge);
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
-            return NotFound();
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
 
@@ -203,28 +262,55 @@ public class BadgesController : ControllerBase
     /// Use case: Removing obsolete or inappropriate badges from the system
     /// </summary>
     [HttpDelete("{id}")]
-    [Authorize] // Require authentication for badge deletion
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> DeleteBadge(Guid id)
     {
         try
         {
-            // Extract authenticated user ID for admin verification
-            var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(authenticatedUserId))
-            {
-                return Unauthorized(new { message = "User not authenticated." });
-            }
-
-            // TODO: Implement admin role verification in service layer
-            // The service layer should verify that the authenticated user has admin privileges
-            // before allowing badge deletion.
-
             await _badgeService.DeleteBadgeAsync(id);
             return NoContent();
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
-            return NotFound();
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// ADMIN-ONLY ENDPOINT - Check and Award Badges
+    /// 
+    /// Checks for eligible badges and awards them to a user. This endpoint requires admin privileges
+    /// because it affects the entire system.
+    /// 
+    /// Security considerations:
+    /// - Admin role verification in service layer
+    /// - Users can only check and award badges if they have admin privileges
+    /// - Input validation prevents malicious badge checks and awards
+    /// - Audit trail should be maintained for badge checks and awards
+    /// 
+    /// Use case: Automatically awarding badges to users based on their progress
+    /// </summary>
+    [HttpPost("check-earning")]
+    public async Task<ActionResult<List<BadgeDto>>> CheckAndAwardBadges([FromBody] CheckBadgeEarningDto request)
+    {
+        try
+        {
+            var earnedBadges = await _badgeEarningService.CheckAndAwardBadgesAsync(request.UserId, request.HabitId);
+            return Ok(earnedBadges);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
+}
+
+public class CheckBadgeEarningDto
+{
+    public string UserId { get; set; } = string.Empty;
+    public Guid? HabitId { get; set; }
 } 

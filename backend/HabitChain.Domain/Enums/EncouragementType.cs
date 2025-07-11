@@ -7,5 +7,7 @@ public enum EncouragementType
     Milestone = 2,      // I get this for reaching a milestone
     Streak = 3,         // I get this for maintaining a streak
     Comeback = 4,       // I get this for getting back on track
-    Achievement = 5     // I get this for earning a badge
+    Achievement = 5,    // I get this for earning a badge
+    Support = 6,        // I get this for support from others
+    Motivation = 7      // I get this for motivational messages
 }

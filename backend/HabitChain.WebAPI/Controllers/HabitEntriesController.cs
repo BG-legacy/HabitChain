@@ -32,10 +32,12 @@ namespace HabitChain.WebAPI.Controllers;
 public class HabitEntriesController : ControllerBase
 {
     private readonly IHabitEntryService _habitEntryService;
+    private readonly IHabitService _habitService;
 
-    public HabitEntriesController(IHabitEntryService habitEntryService)
+    public HabitEntriesController(IHabitEntryService habitEntryService, IHabitService habitService)
     {
         _habitEntryService = habitEntryService;
+        _habitService = habitService;
     }
 
     /// <summary>
@@ -54,8 +56,25 @@ public class HabitEntriesController : ControllerBase
     [HttpGet("habit/{habitId}")]
     public async Task<ActionResult<IEnumerable<HabitEntryDto>>> GetEntriesByHabitId(Guid habitId)
     {
-        // The service layer should verify habit ownership before returning entries
-        // This ensures users can only access entries for habits they own
+        // Extract authenticated user ID
+        var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(authenticatedUserId))
+        {
+            return Unauthorized(new { message = "User not authenticated." });
+        }
+
+        // Verify habit ownership first
+        var habit = await _habitService.GetHabitByIdAsync(habitId);
+        if (habit == null)
+        {
+            return NotFound(new { message = "Habit not found." });
+        }
+
+        if (habit.UserId != authenticatedUserId)
+        {
+            return Unauthorized(new { message = "You can only access entries for your own habits." });
+        }
+
         var entries = await _habitEntryService.GetEntriesByHabitIdAsync(habitId);
         return Ok(entries);
     }
@@ -79,6 +98,25 @@ public class HabitEntriesController : ControllerBase
         [FromQuery] DateTime startDate, 
         [FromQuery] DateTime endDate)
     {
+        // Extract authenticated user ID
+        var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(authenticatedUserId))
+        {
+            return Unauthorized(new { message = "User not authenticated." });
+        }
+
+        // Verify habit ownership first
+        var habit = await _habitService.GetHabitByIdAsync(habitId);
+        if (habit == null)
+        {
+            return NotFound(new { message = "Habit not found." });
+        }
+
+        if (habit.UserId != authenticatedUserId)
+        {
+            return Unauthorized(new { message = "You can only access entries for your own habits." });
+        }
+
         // Validate date range to prevent excessive data retrieval
         if (endDate < startDate)
         {
@@ -92,7 +130,6 @@ public class HabitEntriesController : ControllerBase
             return BadRequest(new { message = "Date range cannot exceed 365 days." });
         }
 
-        // The service layer should verify habit ownership before returning entries
         var entries = await _habitEntryService.GetEntriesByDateRangeAsync(habitId, startDate, endDate);
         return Ok(entries);
     }
@@ -146,18 +183,49 @@ public class HabitEntriesController : ControllerBase
     [HttpGet("habit/{habitId}/check-date")]
     public async Task<ActionResult<bool>> HasEntryForDate(Guid habitId, [FromQuery] DateTime date)
     {
-        // Validate date to prevent abuse (e.g., not too far in future/past)
-        var today = DateTime.Today;
-        var maxDateRange = TimeSpan.FromDays(365);
-        
-        if (date > today.AddDays(1) || date < today.AddDays(-maxDateRange.TotalDays))
+        try
         {
-            return BadRequest(new { message = "Date must be within reasonable range." });
-        }
+            // Extract authenticated user ID
+            var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(authenticatedUserId))
+            {
+                return Unauthorized(new { message = "User not authenticated." });
+            }
 
-        // The service layer should verify habit ownership before checking entries
-        var hasEntry = await _habitEntryService.HasEntryForDateAsync(habitId, date);
-        return Ok(hasEntry);
+            // Validate date first to prevent unnecessary database calls
+            // Use a more permissive date range to account for timezone differences and system clock variations
+            var today = DateTime.UtcNow.Date;
+            var maxDateRange = TimeSpan.FromDays(365);
+            
+            // Allow checking dates within a reasonable range (30 days in future to account for system clock issues, 365 days in past)
+            if (date.Date > today.AddDays(30) || date.Date < today.AddDays(-maxDateRange.TotalDays))
+            {
+                return BadRequest(new { message = "Date must be within reasonable range (up to 30 days in future, 365 days in past)." });
+            }
+
+            // Verify habit ownership
+            var habit = await _habitService.GetHabitByIdLightweightAsync(habitId);
+            if (habit == null)
+            {
+                return NotFound(new { message = "Habit not found." });
+            }
+
+            if (habit.UserId != authenticatedUserId)
+            {
+                return Unauthorized(new { message = "You can only check entries for your own habits." });
+            }
+
+            // Now check for entries
+            var hasEntry = await _habitEntryService.HasEntryForDateAsync(habitId, date);
+            return Ok(hasEntry);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception with more detail
+            Console.WriteLine($"Error in HasEntryForDate for habitId {habitId} and date {date}: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            return StatusCode(500, new { message = "Internal server error occurred while checking habit entry.", error = ex.Message });
+        }
     }
 
     /// <summary>

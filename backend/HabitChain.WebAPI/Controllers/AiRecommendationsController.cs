@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace HabitChain.WebAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/ai-recommendations")]
 [Authorize]
 public class AiRecommendationsController : ControllerBase
 {

@@ -104,9 +104,6 @@ const Navbar: React.FC = () => {
                 <span className="nav-username">
                   Welcome, {user?.firstName || user?.username || 'User'}
                 </span>
-                <Link to="/profile" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                  👤 Profile
-                </Link>
                 <button 
                   onClick={handleLogout}
                   className="nav-link logout-btn"

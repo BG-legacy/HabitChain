@@ -216,23 +216,42 @@
 }
 
 .habit-card {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border: 2px solid #e9ecef;
-  transition: all 0.2s ease;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--glass-shadow);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.habit-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  transition: left var(--transition-normal);
+}
+
+.habit-card:hover::before {
+  left: 100%;
 }
 
 .habit-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-  border-color: #667eea;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .habit-card.inactive {
   opacity: 0.6;
-  background: #f8f9fa;
+  background: var(--glass-bg);
 }
 
 .habit-header {
@@ -247,9 +266,10 @@
 }
 
 .habit-title h3 {
-  margin: 0 0 8px 0;
-  color: #2c3e50;
-  font-size: 1.3rem;
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--color-white);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
 }
 
 .status-badge {
@@ -295,10 +315,11 @@
 }
 
 .habit-description {
-  color: #7f8c8d;
-  margin: 0 0 16px 0;
-  font-size: 0.9rem;
+  color: var(--color-silver);
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-sm);
   line-height: 1.5;
+  opacity: 0.8;
 }
 
 .habit-meta {
@@ -324,11 +345,12 @@
 .habit-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-item {
@@ -337,15 +359,17 @@
 
 .stat-label {
   display: block;
-  font-size: 0.8rem;
-  color: #7f8c8d;
-  margin-bottom: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-silver);
+  margin-bottom: var(--spacing-xs);
+  opacity: 0.8;
 }
 
 .stat-value {
   display: block;
-  font-size: 1.1rem;
+  font-size: var(--font-size-lg);
   font-weight: 700;
+  color: var(--color-white);
 }
 
 .stat-value.streak {

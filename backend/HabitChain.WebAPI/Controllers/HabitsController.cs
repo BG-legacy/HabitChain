@@ -32,10 +32,12 @@ namespace HabitChain.WebAPI.Controllers;
 public class HabitsController : ControllerBase
 {
     private readonly IHabitService _habitService;
+    private readonly IHabitEntryService _habitEntryService;
 
-    public HabitsController(IHabitService habitService)
+    public HabitsController(IHabitService habitService, IHabitEntryService habitEntryService)
     {
         _habitService = habitService;
+        _habitEntryService = habitEntryService;
     }
 
     /// <summary>
@@ -276,5 +278,92 @@ public class HabitsController : ControllerBase
         {
             return NotFound();
         }
+    }
+
+    /// <summary>
+    /// PROTECTED ENDPOINT - Get User Completion Rates
+    /// 
+    /// Retrieves comprehensive completion rate statistics for all habits
+    /// belonging to the authenticated user. This includes overall, weekly,
+    /// and monthly completion rates for each habit and aggregated statistics.
+    /// 
+    /// Security features:
+    /// - [Authorize] ensures only authenticated users can access
+    /// - User ID is extracted from JWT token, not from URL parameter
+    /// - Prevents users from accessing other users' completion data
+    /// 
+    /// Use case: Dashboard analytics and progress tracking
+    /// </summary>
+    [HttpGet("user/{userId}/completion-rates")]
+    public async Task<ActionResult<UserCompletionRateDto>> GetUserCompletionRates(string userId)
+    {
+        // Extract authenticated user ID from JWT token
+        var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        // Ensure user can only access their own completion rates
+        if (string.IsNullOrEmpty(authenticatedUserId) || authenticatedUserId != userId)
+        {
+            return Unauthorized(new { message = "You can only access your own completion rates." });
+        }
+
+        var completionRates = await _habitService.GetUserCompletionRatesAsync(userId);
+        return Ok(completionRates);
+    }
+
+    /// <summary>
+    /// PROTECTED ENDPOINT - Complete a Habit (Simple Completion)
+    /// 
+    /// Creates a simple completion entry for today for the authenticated user and given habit.
+    /// This is used for quick completion tracking from the dashboard/habit cards.
+    /// Uses HabitEntry for simple binary completion tracking, separate from detailed CheckIns.
+    /// </summary>
+    [HttpPost("{id}/complete")]
+    public async Task<ActionResult<HabitEntryDto>> CompleteHabit(Guid id, [FromBody] CompleteHabitRequest? request)
+    {
+        var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(authenticatedUserId))
+        {
+            return Unauthorized(new { message = "User not authenticated." });
+        }
+
+        // Verify habit ownership
+        var habit = await _habitService.GetHabitByIdAsync(id);
+        if (habit == null)
+        {
+            return NotFound(new { message = "Habit not found." });
+        }
+
+        if (habit.UserId != authenticatedUserId)
+        {
+            return Unauthorized(new { message = "You can only complete your own habits." });
+        }
+
+        // Check if already completed today
+        var today = DateTime.UtcNow.Date;
+        var hasCompletionToday = await _habitEntryService.HasEntryForDateAsync(id, today);
+        if (hasCompletionToday)
+        {
+            return BadRequest(new { message = "Habit already completed today." });
+        }
+
+        // Create completion entry
+        var createEntryDto = new CreateHabitEntryDto
+        {
+            HabitId = id,
+            CompletedAt = DateTime.UtcNow,
+            Notes = request?.Notes?.Trim() ?? string.Empty
+        };
+
+        var entry = await _habitEntryService.CreateEntryAsync(createEntryDto);
+        
+        // Update habit completion tracking (streaks, last completed date)
+        await _habitService.UpdateHabitCompletionAsync(id, DateTime.UtcNow);
+
+        return Ok(entry);
+    }
+
+    public class CompleteHabitRequest
+    {
+        public string? Notes { get; set; }
     }
 } 

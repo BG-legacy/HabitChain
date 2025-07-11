@@ -15,13 +15,19 @@ namespace HabitChain.Tests.Services;
 public class HabitServiceTests : TestBase
 {
     private readonly Mock<IHabitRepository> _mockHabitRepository;
+    private readonly Mock<ICheckInRepository> _mockCheckInRepository;
+    private readonly Mock<IHabitEntryRepository> _mockHabitEntryRepository;
+    private readonly Mock<IBadgeEarningService> _mockBadgeEarningService;
     private readonly HabitService _habitService;
     private readonly IFixture _fixture;
 
     public HabitServiceTests()
     {
         _mockHabitRepository = new Mock<IHabitRepository>();
-        _habitService = new HabitService(_mockHabitRepository.Object, Mapper);
+        _mockCheckInRepository = new Mock<ICheckInRepository>();
+        _mockHabitEntryRepository = new Mock<IHabitEntryRepository>();
+        _mockBadgeEarningService = new Mock<IBadgeEarningService>();
+        _habitService = new HabitService(_mockHabitRepository.Object, _mockCheckInRepository.Object, _mockHabitEntryRepository.Object, _mockBadgeEarningService.Object, Mapper);
         _fixture = new Fixture();
     }
 

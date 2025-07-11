@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useDashboard } from '../contexts/DashboardContext';
 import { ApiService } from '../services/api';
+import CompleteHabitButton from './CompleteHabitButton';
+import CheckInButton from './CheckInButton';
 import './Habits.css';
 
 interface Habit {
@@ -15,6 +18,7 @@ interface Habit {
   totalCheckIns: number;
   createdAt: string;
   isActive: boolean;
+  lastCheckIn?: string;
 }
 
 interface HabitFormData {
@@ -26,6 +30,7 @@ interface HabitFormData {
 
 const Habits: React.FC = () => {
   const { user } = useAuth();
+  const { refreshDashboard } = useDashboard();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -50,14 +55,7 @@ const Habits: React.FC = () => {
     return frequencyMap[frequency] || 'Daily';
   };
 
-  useEffect(() => {
-    fetchHabits();
-    if (id) {
-      fetchHabitById(id);
-    }
-  }, [id]);
-
-  const fetchHabits = async () => {
+  const fetchHabits = useCallback(async () => {
     try {
       if (!user?.id) {
         setHabits([]);
@@ -74,16 +72,21 @@ const Habits: React.FC = () => {
         targetDays: 1 // Default value since backend doesn't have this field
       }));
       
-      setHabits(convertedHabits);
+      // Deduplicate habits by ID to prevent duplicate key errors
+      const uniqueHabits = convertedHabits.filter((habit, index, array) => 
+        array.findIndex(h => h.id === habit.id) === index
+      );
+      
+      setHabits(uniqueHabits);
     } catch (error) {
       console.error('Error fetching habits:', error);
       setHabits([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
-  const fetchHabitById = async (habitId: string) => {
+  const fetchHabitById = useCallback(async (habitId: string) => {
     try {
       const habit = await ApiService.get<any>(`/habits/${habitId}`);
       
@@ -104,8 +107,9 @@ const Habits: React.FC = () => {
       setShowForm(true);
     } catch (error) {
       console.error('Error fetching habit:', error);
-      // Fallback to local data
-      const habit = habits.find(h => h.id === habitId);
+      // Fallback to local data - use a ref to avoid dependency issues
+      const currentHabits = habits;
+      const habit = currentHabits.find(h => h.id === habitId);
       if (habit) {
         setEditingHabit(habit);
         setFormData({
@@ -117,13 +121,24 @@ const Habits: React.FC = () => {
         setShowForm(true);
       }
     }
-  };
+  }, []); // Remove habits dependency to prevent infinite loop
+
+  useEffect(() => {
+    fetchHabits();
+  }, [fetchHabits]);
+
+  // Separate useEffect for fetching habit by ID to avoid circular dependencies
+  useEffect(() => {
+    if (id && user?.id) {
+      fetchHabitById(id);
+    }
+  }, [id, user?.id]); // Only depend on id and user.id, not the functions
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'targetDays' ? parseInt(value) : value
+      [name]: name === 'targetDays' ? (value === '' ? 1 : parseInt(value) || 1) : value
     }));
   };
 
@@ -191,6 +206,9 @@ const Habits: React.FC = () => {
         setHabits(prev => prev.map(habit => 
           habit.id === editingHabit.id ? convertedHabit : habit
         ));
+        
+        // Refresh the dashboard to update the dashboard state
+        await refreshDashboard();
       } else {
         // Create new habit
         const newHabit = await ApiService.post<any>('/habits', habitData);
@@ -203,6 +221,9 @@ const Habits: React.FC = () => {
         };
         
         setHabits(prev => [...prev, convertedHabit]);
+        
+        // Refresh the dashboard to update the dashboard state
+        await refreshDashboard();
       }
       
       resetForm();
@@ -237,6 +258,9 @@ const Habits: React.FC = () => {
     try {
       await ApiService.delete(`/habits/${habitId}`);
       setHabits(prev => prev.filter(habit => habit.id !== habitId));
+      
+      // Refresh the dashboard to update the dashboard state
+      await refreshDashboard();
     } catch (error) {
       console.error('Error deleting habit:', error);
       alert('Failed to delete habit. Please try again.');
@@ -453,9 +477,21 @@ const Habits: React.FC = () => {
               </div>
               
               <div className="habit-actions">
-                <Link to={`/check-in?habit=${habit.id}`} className="btn-checkin">
-                  Check-in
-                </Link>
+                <CompleteHabitButton 
+                  habitId={habit.id}
+                  habitName={habit.name}
+                  isCompleted={habit.lastCheckIn ? new Date(habit.lastCheckIn).toDateString() === new Date().toDateString() : false}
+                  onComplete={() => fetchHabits()}
+                  size="medium"
+                />
+                <CheckInButton 
+                  habitId={habit.id}
+                  habitName={habit.name}
+                  isCompleted={habit.lastCheckIn ? new Date(habit.lastCheckIn).toDateString() === new Date().toDateString() : false}
+                  variant="outlined"
+                  size="medium"
+                  onCheckIn={() => fetchHabits()}
+                />
                 <Link to={`/habits/${habit.id}`} className="btn-view">
                   View Details
                 </Link>

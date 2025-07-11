@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { HabitsService } from '../services/habitsService';
+import { useDashboard } from '../contexts/DashboardContext';
 import './HabitCard.css';
 
 interface HabitCardProps {
@@ -12,6 +14,11 @@ interface HabitCardProps {
     currentStreak: number;
     longestStreak: number;
     totalCheckIns: number;
+    completionRate?: number;
+    weeklyCompletionRate?: number;
+    monthlyCompletionRate?: number;
+    totalPossibleCompletions?: number;
+    totalActualCompletions?: number;
     createdAt: string;
     isActive: boolean;
   };
@@ -30,6 +37,9 @@ const HabitCard: React.FC<HabitCardProps> = ({
   showActions = true,
   className = ''
 }) => {
+  const [completing, setCompleting] = useState(false);
+  const { refreshDashboard } = useDashboard();
+
   const getFrequencyIcon = (frequency: string) => {
     switch (frequency.toLowerCase()) {
       case 'daily': return '📅';
@@ -48,6 +58,19 @@ const HabitCard: React.FC<HabitCardProps> = ({
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const handleComplete = async () => {
+    setCompleting(true);
+    try {
+      await HabitsService.completeHabit(habit.id);
+      await refreshDashboard();
+    } catch (err) {
+      // Optionally show a toast or error
+      console.error('Failed to complete habit', err);
+    } finally {
+      setCompleting(false);
+    }
   };
 
   return (
@@ -93,7 +116,41 @@ const HabitCard: React.FC<HabitCardProps> = ({
             <div className="stat-value">{habit.totalCheckIns}</div>
             <div className="stat-label">Total Check-ins</div>
           </div>
+          {habit.completionRate !== undefined && (
+            <div className="stat-item">
+              <div className="stat-value" style={{ color: habit.completionRate >= 80 ? '#28a745' : habit.completionRate >= 60 ? '#ffc107' : '#dc3545' }}>
+                {habit.completionRate.toFixed(1)}%
+              </div>
+              <div className="stat-label">Completion Rate</div>
+            </div>
+          )}
         </div>
+
+        {habit.completionRate !== undefined && (
+          <div className="completion-details">
+            <div className="completion-bar">
+              <div 
+                className="completion-fill" 
+                style={{ 
+                  width: `${Math.min(habit.completionRate, 100)}%`,
+                  backgroundColor: habit.completionRate >= 80 ? '#28a745' : habit.completionRate >= 60 ? '#ffc107' : '#dc3545'
+                }}
+              />
+            </div>
+            <div className="completion-breakdown">
+              {habit.weeklyCompletionRate !== undefined && (
+                <span className="completion-item">
+                  Week: {habit.weeklyCompletionRate.toFixed(1)}%
+                </span>
+              )}
+              {habit.monthlyCompletionRate !== undefined && (
+                <span className="completion-item">
+                  Month: {habit.monthlyCompletionRate.toFixed(1)}%
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="habit-meta">
           <span className="created-date">Created: {formatDate(habit.createdAt)}</span>
@@ -102,6 +159,13 @@ const HabitCard: React.FC<HabitCardProps> = ({
 
       {showActions && (
         <div className="habit-actions">
+          <button 
+            className="action-btn success"
+            onClick={handleComplete}
+            disabled={completing}
+          >
+            {completing ? 'Completing...' : 'Complete'}
+          </button>
           <Link to={`/habits/${habit.id}`} className="action-btn primary">
             View Details
           </Link>

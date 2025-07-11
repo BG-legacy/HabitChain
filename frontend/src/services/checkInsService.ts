@@ -7,38 +7,31 @@ export interface CheckIn {
   userId: string;
   completedAt: string;
   notes?: string;
-  mood?: number;
-  location?: string;
-  weather?: string;
-  tags?: string[];
+  streakDay: number;
+  isManualEntry: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateCheckInRequest {
+  userId?: string;
   habitId: string;
+  completedAt: string;
   notes?: string;
-  mood?: number;
-  location?: string;
-  weather?: string;
-  tags?: string[];
+  streakDay: number;
+  isManualEntry: boolean;
 }
 
 export interface UpdateCheckInRequest {
   notes?: string;
-  mood?: number;
-  location?: string;
-  weather?: string;
-  tags?: string[];
+  streakDay?: number;
+  isManualEntry?: boolean;
 }
 
 export interface CheckInStats {
   totalCheckIns: number;
   currentStreak: number;
   longestStreak: number;
-  averageMood: number;
-  mostFrequentLocation?: string;
-  mostFrequentWeather?: string;
   checkInsByDay: Record<string, number>;
   checkInsByMonth: Record<string, number>;
 }
@@ -50,7 +43,6 @@ export class CheckInsService {
     habitId?: string;
     startDate?: string;
     endDate?: string;
-    mood?: number;
   }): Promise<CheckIn[]> {
     return ApiService.get<CheckIn[]>('/check-ins', filters);
   }
@@ -62,7 +54,15 @@ export class CheckInsService {
 
   // Create a new check-in
   static async createCheckIn(checkIn: CreateCheckInRequest): Promise<CheckIn> {
-    return ApiService.post<CheckIn>('/check-ins', checkIn);
+    // Ensure habitId is properly formatted as GUID
+    const formattedCheckIn = {
+      ...checkIn,
+      habitId: checkIn.habitId // The backend will handle the conversion
+    };
+    
+    console.log('CheckInsService - formatted check-in data:', formattedCheckIn);
+    
+    return ApiService.post<CheckIn>('/check-ins', formattedCheckIn);
   }
 
   // Update an existing check-in

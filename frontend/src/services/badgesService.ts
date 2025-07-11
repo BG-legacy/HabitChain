@@ -34,32 +34,32 @@ export enum BadgeType {
 export class BadgesService {
   // Get all available badges
   static async getBadges(): Promise<Badge[]> {
-    return ApiService.get<Badge[]>('/badges');
+    return ApiService.get<Badge[]>('/Badges');
   }
 
   // Get a specific badge by ID
   static async getBadge(id: string): Promise<Badge> {
-    return ApiService.get<Badge>(`/badges/${id}`);
+    return ApiService.get<Badge>(`/Badges/${id}`);
   }
 
   // Get user's unlocked badges
   static async getUserBadges(): Promise<UserBadge[]> {
-    return ApiService.get<UserBadge[]>('/user-badges');
+    return ApiService.get<UserBadge[]>('/UserBadges');
   }
 
   // Get user's badge progress
   static async getBadgeProgress(): Promise<Badge[]> {
-    return ApiService.get<Badge[]>('/badges/progress');
+    return ApiService.get<Badge[]>('/Badges/progress');
   }
 
   // Unlock a badge for the current user
   static async unlockBadge(badgeId: string): Promise<UserBadge> {
-    return ApiService.post<UserBadge>('/user-badges', { badgeId });
+    return ApiService.post<UserBadge>('/UserBadges', { badgeId });
   }
 
   // Get badge statistics for the current user
   static async getBadgeStats(): Promise<any> {
-    return ApiService.get<any>('/badges/stats');
+    return ApiService.get<any>('/Badges/stats');
   }
 }
 

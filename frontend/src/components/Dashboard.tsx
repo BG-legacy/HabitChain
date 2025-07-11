@@ -1,96 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import { useDashboard } from '../contexts/DashboardContext';
+import { badgeService, Badge } from '../services/badgeService';
 import { 
   AnimatedCard, 
-  AnimatedButton, 
   AnimatedLink,
   AnimatedIcon,
   AnimatedCounter,
-  AnimatedProgress,
   fadeInUp,
   staggerContainer,
   slideInFromLeft,
   slideInFromRight
 } from './AnimatedComponents';
+import CompleteHabitButton from './CompleteHabitButton';
+import CheckInButton from './CheckInButton';
 import './Dashboard.css';
-import { ApiService } from '../services/api';
-
-interface Habit {
-  id: string;
-  name: string;
-  description: string;
-  frequency: string;
-  currentStreak: number;
-  longestStreak: number;
-  nextCheckIn: string;
-}
-
-interface DashboardStats {
-  totalHabits: number;
-  activeStreaks: number;
-  totalCheckIns: number;
-  completionRate: number;
-}
+import './BadgeProgress.css';
+import HabitCard from './HabitCard';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const [habits, setHabits] = useState<Habit[]>([]);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalHabits: 0,
-    activeStreaks: 0,
-    totalCheckIns: 0,
-    completionRate: 0
-  });
-  const [loading, setLoading] = useState(true);
+  const { habits, stats, loading, refreshDashboard } = useDashboard();
+  const [badges, setBadges] = React.useState<Badge[]>([]);
+  const [recentAchievements, setRecentAchievements] = React.useState<Badge[]>([]);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  React.useEffect(() => {
+    if (user?.id) {
+      fetchBadges();
+    }
+  }, [user?.id]);
 
-  // Convert backend enum values to frontend string values
-  const convertFrequencyToString = (frequency: number): string => {
-    const frequencyMap: { [key: number]: string } = {
-      1: 'Daily',
-      2: 'Weekly', 
-      3: 'Monthly',
-      4: 'Custom'
-    };
-    return frequencyMap[frequency] || 'Daily';
-  };
-
-  const fetchDashboardData = async () => {
+  const fetchBadges = async () => {
     try {
-      if (!user?.id) return;
-
-      const data = await ApiService.get<any[]>(`/habits/user/${user.id}`);
+      const userBadges = await badgeService.getUserBadgesWithProgress(user!.id);
+      const sortedBadges = badgeService.sortBadgesByDisplayOrder(userBadges);
+      setBadges(sortedBadges);
       
-      // Convert frequency enum values to strings for frontend
-      const convertedHabits = data.map(habit => ({
-        ...habit,
-        frequency: convertFrequencyToString(habit.frequency)
-      }));
-      
-      setHabits(convertedHabits);
-      
-      // Calculate stats from habits data
-      const activeHabits = convertedHabits.filter((h: any) => h.isActive);
-      const totalCheckIns = convertedHabits.reduce((sum: number, h: any) => sum + (h.totalCheckIns || 0), 0);
-      const activeStreaks = convertedHabits.reduce((sum: number, h: any) => sum + (h.currentStreak > 0 ? 1 : 0), 0);
-      const completionRate = convertedHabits.length > 0 ? 
-        (activeStreaks / convertedHabits.length) * 100 : 0;
-      
-      setStats({
-        totalHabits: convertedHabits.length,
-        activeStreaks: activeStreaks,
-        totalCheckIns: totalCheckIns,
-        completionRate: Math.round(completionRate)
-      });
+      // Get recent achievements
+      const recent = badgeService.getRecentEarnedBadges(sortedBadges, 3);
+      setRecentAchievements(recent);
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching badges:', error);
     }
   };
 
@@ -116,6 +68,10 @@ const Dashboard: React.FC = () => {
       </motion.div>
     );
   }
+
+  const earnedBadges = badgeService.getEarnedBadgesCount(badges);
+  const totalBadges = badges.length;
+  const badgeCompletionRate = badgeService.getCompletionRate(badges);
 
   return (
     <motion.div 
@@ -167,14 +123,48 @@ const Dashboard: React.FC = () => {
             <p>Total Check-ins</p>
           </div>
         </AnimatedCard>
-        <AnimatedCard className="stat-card" delay={0.4}>
-          <AnimatedIcon className="stat-icon">📈</AnimatedIcon>
-          <div className="stat-content">
-            <AnimatedCounter value={stats.completionRate} className="stat-number" />
-            <span>%</span>
-            <p>Completion Rate</p>
-          </div>
-        </AnimatedCard>
+
+      </motion.div>
+
+      {/* Badge Progress */}
+      <motion.div 
+        className="badge-progress-section"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeInUp}
+      >
+        <div className="section-header">
+          <h2>🏆 Badge Progress</h2>
+          <Link to="/badges" className="view-all-link">View All Badges</Link>
+        </div>
+        
+        <motion.div 
+          className="badge-stats"
+          variants={staggerContainer}
+        >
+          <AnimatedCard className="badge-stat-card" delay={0.1}>
+            <div className="badge-stat-icon">🏆</div>
+            <div className="badge-stat-content">
+              <h3>{earnedBadges}</h3>
+              <p>Badges Earned</p>
+            </div>
+          </AnimatedCard>
+          <AnimatedCard className="badge-stat-card" delay={0.2}>
+            <div className="badge-stat-icon">📊</div>
+            <div className="badge-stat-content">
+              <h3>{badgeCompletionRate}%</h3>
+              <p>Badge Completion</p>
+            </div>
+          </AnimatedCard>
+          <AnimatedCard className="badge-stat-card" delay={0.3}>
+            <div className="badge-stat-icon">🎯</div>
+            <div className="badge-stat-content">
+              <h3>{totalBadges - earnedBadges}</h3>
+              <p>Remaining</p>
+            </div>
+          </AnimatedCard>
+        </motion.div>
       </motion.div>
 
       {/* Quick Actions */}
@@ -202,8 +192,16 @@ const Dashboard: React.FC = () => {
               Add New Habit
             </AnimatedLink>
           </motion.div>
+          <motion.div variants={fadeInUp}>
+            <AnimatedLink to="/completion-rates" className="action-btn tertiary">
+              <AnimatedIcon>📊</AnimatedIcon>
+              View Completion Rates
+            </AnimatedLink>
+          </motion.div>
         </motion.div>
       </motion.div>
+
+
 
       {/* Current Habits */}
       <motion.div 
@@ -243,70 +241,61 @@ const Dashboard: React.FC = () => {
                 className="habit-card"
                 delay={index * 0.1}
               >
-                <div className="habit-header">
-                  <h3>{habit.name}</h3>
-                  <span className="habit-frequency">{habit.frequency}</span>
-                </div>
-                <p className="habit-description">{habit.description}</p>
-                <div className="habit-stats">
-                  <div className="streak-info">
-                    <motion.span 
-                      className="current-streak"
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      🔥 {habit.currentStreak} days
-                    </motion.span>
-                    <motion.span 
-                      className="longest-streak"
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      🏆 {habit.longestStreak} days
-                    </motion.span>
-                  </div>
-                  <div className="next-checkin">
-                    Next: {new Date(habit.nextCheckIn).toLocaleDateString()}
-                  </div>
-                </div>
-                <div className="habit-actions">
-                  <AnimatedLink to={`/check-in?habit=${habit.id}`} className="btn-checkin">
-                    Check-in
-                  </AnimatedLink>
-                  <AnimatedLink to={`/habits/${habit.id}`} className="btn-edit">
-                    Edit
-                  </AnimatedLink>
-                </div>
+                <HabitCard
+                  habit={{
+                    ...(habit as any),
+                    targetDays: (habit as any).targetDays ?? 1,
+                    createdAt: (habit as any).createdAt || new Date().toISOString(),
+                  }}
+                  showActions={false}
+                />
               </AnimatedCard>
             ))}
           </motion.div>
         )}
       </motion.div>
 
-      {/* Recent Activity */}
-      <motion.div 
-        className="recent-activity"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={fadeInUp}
-      >
-        <h2>Recent Activity</h2>
+      {/* Recent Achievements */}
+      {recentAchievements.length > 0 && (
         <motion.div 
-          className="activity-list"
-          variants={staggerContainer}
+          className="recent-achievements"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
         >
+          <h2>Recent Achievements</h2>
           <motion.div 
-            className="activity-item"
-            variants={fadeInUp}
-            whileHover={{ x: 5 }}
+            className="achievements-list"
+            variants={staggerContainer}
           >
-            <AnimatedIcon className="activity-icon">🎯</AnimatedIcon>
-            <div className="activity-content">
-              <p>Welcome to HabitChain! Start building your first habit.</p>
-              <span className="activity-time">Just now</span>
-            </div>
+            {recentAchievements.map((badge, index) => (
+              <motion.div 
+                key={badge.id} 
+                className="achievement-item"
+                variants={fadeInUp}
+                whileHover={{ x: 5 }}
+              >
+                <div 
+                  className="achievement-icon"
+                  style={{ backgroundColor: badge.colorTheme }}
+                >
+                  {badge.emoji}
+                </div>
+                <div className="achievement-content">
+                  <h4>{badge.name}</h4>
+                  <p>{badge.description}</p>
+                  <span className="achievement-date">
+                    {badge.earnedAt ? new Date(badge.earnedAt).toLocaleDateString() : 'Recently'}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
         </motion.div>
-      </motion.div>
+      )}
+
+
     </motion.div>
   );
 };

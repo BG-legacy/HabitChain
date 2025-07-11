@@ -35,12 +35,15 @@ public class AiRecommendationService : IAiRecommendationService
         
         var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? 
                     _configuration["OpenAISettings:ApiKey"];
-        if (string.IsNullOrEmpty(apiKey))
-        {
-            throw new InvalidOperationException("OpenAI API key is not configured");
-        }
         
-        _openAIClient = new OpenAIClient(apiKey);
+        if (!string.IsNullOrEmpty(apiKey))
+        {
+            _openAIClient = new OpenAIClient(apiKey);
+        }
+        else
+        {
+            _openAIClient = null;
+        }
     }
 
     public async Task<List<HabitRecommendationDto>> GetHabitRecommendationsAsync(string userId)
@@ -91,6 +94,11 @@ public class AiRecommendationService : IAiRecommendationService
     {
         var userAnalysis = await GetUserHabitAnalysisAsync(userId);
         
+        if (_openAIClient == null)
+        {
+            return GetFallbackMotivation(userAnalysis);
+        }
+        
         var prompt = $@"
 You are a supportive habit coach. Based on this user's habit data, provide a personalized, encouraging message (max 200 words):
 
@@ -103,18 +111,26 @@ Weak Categories: {string.Join(", ", userAnalysis.Patterns.WeakCategories)}
 
 Make it personal, encouraging, and actionable. Focus on their progress and potential for growth.";
 
-        var model = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? 
-                   _configuration["OpenAISettings:Model"] ?? "gpt-4o-mini";
-        var maxTokens = Environment.GetEnvironmentVariable("OPENAI_MAX_TOKENS") ?? 
-                       _configuration["OpenAISettings:MaxTokens"] ?? "500";
-        var response = await _openAIClient.GetChatClient(model).CompleteChatAsync(
-            new[] { new UserChatMessage(prompt) },
-            new ChatCompletionOptions
-            {
-                MaxOutputTokenCount = int.Parse(maxTokens)
-            });
+        try
+        {
+            var model = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? 
+                       _configuration["OpenAISettings:Model"] ?? "gpt-4o-mini";
+            var maxTokens = Environment.GetEnvironmentVariable("OPENAI_MAX_TOKENS") ?? 
+                           _configuration["OpenAISettings:MaxTokens"] ?? "500";
+            var response = await _openAIClient.GetChatClient(model).CompleteChatAsync(
+                new[] { new UserChatMessage(prompt) },
+                new ChatCompletionOptions
+                {
+                    MaxOutputTokenCount = int.Parse(maxTokens)
+                });
 
-        return response.Value.Content[0].Text ?? "Keep up the great work on your habits!";
+            return response.Value.Content[0].Text ?? GetFallbackMotivation(userAnalysis);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error generating AI motivation: {ex.Message}");
+            return GetFallbackMotivation(userAnalysis);
+        }
     }
 
     public async Task<List<HabitRecommendationDto>> GetComplementaryHabitsAsync(string userId, Guid habitId)
@@ -194,6 +210,11 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
 
     private async Task<List<HabitRecommendationDto>> GenerateRecommendationsAsync(string prompt)
     {
+        if (_openAIClient == null)
+        {
+            return GetFallbackRecommendations();
+        }
+        
         try
         {
             var model = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? 
@@ -347,5 +368,29 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
                 Difficulty = "Medium"
             }
         };
+    }
+
+    private string GetFallbackMotivation(UserHabitAnalysisDto analysis)
+    {
+        var habitCount = analysis.CurrentHabits.Count;
+        var checkInCount = analysis.RecentCheckIns.Count;
+        var completionRate = analysis.Patterns.AverageCompletionRate;
+        
+        if (habitCount == 0)
+        {
+            return "Welcome to your habit journey! Every great achievement starts with a single step. You're about to embark on an amazing adventure of self-improvement. Let's start building the habits that will transform your life!";
+        }
+        
+        if (completionRate >= 0.8)
+        {
+            return $"You're absolutely crushing it! With {habitCount} active habits and a {completionRate:P0} completion rate, you're showing incredible consistency. Keep up this amazing momentum - you're building the foundation for lasting change!";
+        }
+        
+        if (completionRate >= 0.5)
+        {
+            return $"Great progress! You have {habitCount} habits and you're completing them {completionRate:P0} of the time. That's solid consistency! Remember, every check-in counts - you're building momentum with each completed habit.";
+        }
+        
+        return $"You're on the right track! With {habitCount} habits started, you've taken the first step toward positive change. Every habit journey has ups and downs - what matters is that you keep showing up. Your future self will thank you for the effort you're putting in today!";
     }
 } 

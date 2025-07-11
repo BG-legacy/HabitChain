@@ -105,6 +105,8 @@ export class ApiService {
 
   // Generic POST request
   static async post<T>(url: string, data?: any): Promise<T> {
+    console.log('ApiService.post - URL:', url);
+    console.log('ApiService.post - Data:', data);
     const response = await api.post<T>(url, data);
     return response.data;
   }

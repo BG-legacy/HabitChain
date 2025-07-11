@@ -119,10 +119,12 @@ builder.Services.AddScoped<IHabitEntryService, HabitEntryService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IBadgeService, BadgeService>();
+builder.Services.AddScoped<IBadgeEarningService, BadgeEarningService>();
 builder.Services.AddScoped<IUserBadgeService, UserBadgeService>();
 builder.Services.AddScoped<ICheckInService, CheckInService>();
 builder.Services.AddScoped<IEncouragementService, EncouragementService>();
 builder.Services.AddScoped<IAiRecommendationService, AiRecommendationService>();
+builder.Services.AddScoped<IExportService, ExportService>();
 
 // Add CORS
 builder.Services.AddCors(options =>

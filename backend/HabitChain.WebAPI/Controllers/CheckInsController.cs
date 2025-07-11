@@ -29,7 +29,7 @@ namespace HabitChain.WebAPI.Controllers;
 /// - Input validation prevents malicious data injection
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/check-ins")]
 [Authorize] // Protect all endpoints in this controller
 public class CheckInsController : ControllerBase
 {
@@ -242,11 +242,16 @@ public class CheckInsController : ControllerBase
             return Unauthorized(new { message = "User not authenticated." });
         }
 
+        // Override UserId from JWT token for security
+        createCheckInDto.UserId = authenticatedUserId;
+
         // Validate check-in date to prevent abuse (e.g., not too far in future/past)
-        var today = DateTime.Today;
+        // Use UTC time to match the DTO validation and avoid timezone issues
+        var now = DateTime.UtcNow;
         var maxDateRange = TimeSpan.FromDays(30); // Allow check-ins up to 30 days in past
+        var buffer = TimeSpan.FromMinutes(5); // Add buffer for timezone differences
         
-        if (createCheckInDto.CompletedAt > today.AddDays(1) || createCheckInDto.CompletedAt < today.AddDays(-maxDateRange.TotalDays))
+        if (createCheckInDto.CompletedAt > now.AddDays(1).Add(buffer) || createCheckInDto.CompletedAt < now.AddDays(-maxDateRange.TotalDays).Add(-buffer))
         {
             return BadRequest(new { message = "Check-in date must be within reasonable range." });
         }
@@ -327,5 +332,45 @@ public class CheckInsController : ControllerBase
         {
             return NotFound();
         }
+    }
+
+    /// <summary>
+    /// PROTECTED ENDPOINT - Complete a Habit (Quick Check-In)
+    /// 
+    /// Creates a check-in for today for the authenticated user and given habit.
+    /// This is used for quick completion from the dashboard/habit card.
+    /// </summary>
+    [HttpPost("complete")]
+    public async Task<ActionResult<CheckInDto>> CompleteHabit([FromBody] CompleteCheckInRequest request)
+    {
+        if (request == null || request.HabitId == Guid.Empty)
+        {
+            return BadRequest(new { message = "Invalid habit ID." });
+        }
+
+        var authenticatedUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(authenticatedUserId))
+        {
+            return Unauthorized(new { message = "User not authenticated." });
+        }
+
+        // Create a check-in for today (UTC)
+        var createCheckInDto = new CreateCheckInDto
+        {
+            UserId = authenticatedUserId, // Will be overridden in service for security
+            HabitId = request.HabitId,
+            CompletedAt = DateTime.UtcNow,
+            Notes = request.Notes ?? string.Empty,
+            IsManualEntry = false
+        };
+
+        var checkIn = await _checkInService.CreateCheckInAsync(createCheckInDto);
+        return Ok(checkIn);
+    }
+
+    public class CompleteCheckInRequest
+    {
+        public Guid HabitId { get; set; }
+        public string? Notes { get; set; }
     }
 } 

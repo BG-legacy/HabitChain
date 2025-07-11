@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useDashboard } from '../contexts/DashboardContext';
 import './CheckIn.css';
 import { ApiService } from '../services/api';
+import { CheckInsService } from '../services/checkInsService';
 
 interface Habit {
   id: string;
@@ -13,39 +15,36 @@ interface Habit {
   currentStreak: number;
   longestStreak: number;
   lastCheckIn?: string;
+  totalCheckIns?: number;
 }
 
 interface CheckInData {
+  userId: string;
   habitId: string;
-  notes: string;
-  mood: string;
-  completed: boolean;
+  completedAt: string;
+  notes?: string;
+  streakDay: number;
+  isManualEntry: boolean;
 }
 
 const CheckIn: React.FC = () => {
   const { user } = useAuth();
+  const { refreshDashboard, updateHabitCompletion } = useDashboard();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedHabit, setSelectedHabit] = useState<string>('');
   const [checkInData, setCheckInData] = useState<CheckInData>({
+    userId: '',
     habitId: '',
+    completedAt: new Date().toISOString(),
     notes: '',
-    mood: 'good',
-    completed: true
+    streakDay: 1,
+    isManualEntry: true
   });
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-
-  useEffect(() => {
-    fetchHabits();
-    const habitParam = searchParams.get('habit');
-    if (habitParam) {
-      setSelectedHabit(habitParam);
-      setCheckInData(prev => ({ ...prev, habitId: habitParam }));
-    }
-  }, [searchParams]);
 
   // Convert backend enum values to frontend string values
   const convertFrequencyToString = (frequency: number): string => {
@@ -58,7 +57,7 @@ const CheckIn: React.FC = () => {
     return frequencyMap[frequency] || 'Daily';
   };
 
-  const fetchHabits = async () => {
+  const fetchHabits = useCallback(async () => {
     try {
       if (!user?.id) {
         setHabits([]);
@@ -80,7 +79,16 @@ const CheckIn: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    fetchHabits();
+    const habitParam = searchParams.get('habit');
+    if (habitParam) {
+      setSelectedHabit(habitParam);
+      setCheckInData(prev => ({ ...prev, habitId: habitParam }));
+    }
+  }, [searchParams, fetchHabits]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -92,7 +100,12 @@ const CheckIn: React.FC = () => {
 
   const handleHabitSelect = (habitId: string) => {
     setSelectedHabit(habitId);
-    setCheckInData(prev => ({ ...prev, habitId }));
+    setCheckInData(prev => ({ 
+      ...prev, 
+      habitId,
+      userId: user?.id || '',
+      completedAt: new Date().toISOString()
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,41 +116,104 @@ const CheckIn: React.FC = () => {
       return;
     }
     
+    // Validate that habitId is a valid GUID
+    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!guidRegex.test(checkInData.habitId)) {
+      console.error('Invalid habitId format:', checkInData.habitId);
+      alert('Invalid habit ID format. Please try again.');
+      return;
+    }
+    
     setSubmitting(true);
     
     try {
-      // Submit check-in to API
-      const response = await fetch('/api/check-ins', {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          'Content-Type': 'application/json' 
-        },
-        body: JSON.stringify(checkInData)
-      });
+      // Prepare the check-in data with proper structure for backend
+      const checkInPayload = {
+        habitId: checkInData.habitId, // This should be a valid GUID string
+        completedAt: new Date(Date.now() - 60000).toISOString(), // Use 1 minute ago to avoid timezone issues
+        notes: checkInData.notes || '',
+        streakDay: checkInData.streakDay || 1, // Ensure it's at least 1
+        isManualEntry: checkInData.isManualEntry
+      };
+
+      console.log('Submitting check-in payload:', checkInPayload);
+      console.log('Payload habitId type:', typeof checkInPayload.habitId);
+      console.log('Payload habitId value:', checkInPayload.habitId);
+      console.log('Payload completedAt type:', typeof checkInPayload.completedAt);
+      console.log('Payload completedAt value:', checkInPayload.completedAt);
+      console.log('Payload streakDay type:', typeof checkInPayload.streakDay);
+      console.log('Payload streakDay value:', checkInPayload.streakDay);
+
+      // Submit check-in to API using CheckInsService
+      const createdCheckIn = await CheckInsService.createCheckIn(checkInPayload);
       
-      if (response.ok) {
-        setSuccess(true);
-      } else {
-        throw new Error('Failed to submit check-in');
+      // Update dashboard immediately for better UX using the actual streak from backend
+      const selectedHabitData = habits.find(h => h.id === checkInData.habitId);
+      if (selectedHabitData) {
+        const actualStreak = createdCheckIn.streakDay;
+        
+        // Use the new updateHabitCompletion method for immediate dashboard updates
+        updateHabitCompletion(checkInData.habitId, createdCheckIn.completedAt, actualStreak);
+        
+        // Also update the local habits state for immediate UI feedback
+        setHabits(prevHabits => 
+          prevHabits.map(habit => 
+            habit.id === checkInData.habitId 
+              ? { 
+                  ...habit, 
+                  currentStreak: actualStreak,
+                  longestStreak: Math.max(habit.longestStreak, actualStreak),
+                  totalCheckIns: (habit.totalCheckIns || 0) + 1,
+                  lastCheckIn: createdCheckIn.completedAt
+                }
+              : habit
+          )
+        );
       }
+      
+      setSuccess(true);
+      
+      // Refresh dashboard data to ensure everything is in sync with backend
+      // Use a shorter delay for more responsive updates
+      setTimeout(async () => {
+        await refreshDashboard();
+      }, 300);
       
       // Reset form after success
       setTimeout(() => {
         setCheckInData({
+          userId: '',
           habitId: '',
+          completedAt: new Date().toISOString(),
           notes: '',
-          mood: 'good',
-          completed: true
+          streakDay: 1,
+          isManualEntry: true
         });
         setSelectedHabit('');
         setSuccess(false);
         navigate('/dashboard');
       }, 2000);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting check-in:', error);
-      alert('Failed to submit check-in. Please try again.');
+      
+      // Show detailed error information
+      if (error.response?.data) {
+        console.error('Full API Error Response:', JSON.stringify(error.response.data, null, 2));
+        
+        // If there are validation errors, show them
+        if (error.response.data.errors) {
+          console.error('Validation Errors:', error.response.data.errors);
+          const errorMessages = Object.entries(error.response.data.errors)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+            .join('\n');
+          alert(`Validation Errors:\n${errorMessages}`);
+        } else {
+          alert(`Failed to submit check-in: ${error.response.data.title || error.response.data.message || 'Unknown error'}`);
+        }
+      } else {
+        alert('Failed to submit check-in. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -222,29 +298,13 @@ const CheckIn: React.FC = () => {
               <label className="checkbox-label">
                 <input
                   type="checkbox"
-                  name="completed"
-                  checked={checkInData.completed}
+                  name="isManualEntry"
+                  checked={checkInData.isManualEntry}
                   onChange={handleInputChange}
                 />
                 <span className="checkmark"></span>
-                I completed this habit today
+                This is a manual entry
               </label>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="mood">How are you feeling?</label>
-              <select
-                id="mood"
-                name="mood"
-                value={checkInData.mood}
-                onChange={handleInputChange}
-              >
-                <option value="excellent">😊 Excellent</option>
-                <option value="good">🙂 Good</option>
-                <option value="okay">😐 Okay</option>
-                <option value="tough">😔 Tough</option>
-                <option value="struggling">😞 Struggling</option>
-              </select>
             </div>
 
             <div className="form-group">
@@ -302,7 +362,7 @@ const CheckIn: React.FC = () => {
           <div className="stat-card">
             <div className="stat-icon">✅</div>
             <div className="stat-content">
-              <h3>0</h3>
+              <h3>{habits.filter(h => h.lastCheckIn && new Date(h.lastCheckIn).toDateString() === new Date().toDateString()).length}</h3>
               <p>Completed Today</p>
             </div>
           </div>

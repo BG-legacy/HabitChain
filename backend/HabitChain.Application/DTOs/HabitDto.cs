@@ -15,6 +15,12 @@ public class HabitDto
     public int CurrentStreak { get; set; }
     public int LongestStreak { get; set; }
     public DateTime? LastCompletedAt { get; set; }
+    public int TotalCheckIns { get; set; }
+    public double CompletionRate { get; set; } // Overall completion rate as percentage
+    public double WeeklyCompletionRate { get; set; } // Last 7 days completion rate
+    public double MonthlyCompletionRate { get; set; } // Last 30 days completion rate
+    public int TotalPossibleCompletions { get; set; } // Total possible completions based on frequency
+    public int TotalActualCompletions { get; set; } // Total actual completions
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 } 

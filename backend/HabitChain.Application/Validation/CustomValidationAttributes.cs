@@ -14,7 +14,17 @@ public class NotInFutureAttribute : ValidationAttribute
 
         if (value is DateTime date)
         {
-            if (date > DateTime.UtcNow)
+            var now = DateTime.UtcNow;
+            // Allow a small buffer (5 minutes) to account for timezone differences and clock skew
+            var buffer = TimeSpan.FromMinutes(5);
+            var maxAllowedDate = now.Add(buffer);
+            
+            Console.WriteLine($"NotInFuture validation - Input date: {date:yyyy-MM-dd HH:mm:ss} UTC");
+            Console.WriteLine($"NotInFuture validation - Current time: {now:yyyy-MM-dd HH:mm:ss} UTC");
+            Console.WriteLine($"NotInFuture validation - Max allowed date: {maxAllowedDate:yyyy-MM-dd HH:mm:ss} UTC");
+            Console.WriteLine($"NotInFuture validation - Is in future: {date > maxAllowedDate}");
+            
+            if (date > maxAllowedDate)
             {
                 return new ValidationResult(ErrorMessage ?? "Date cannot be in the future.");
             }
@@ -32,7 +42,7 @@ public class DateRangeAttribute : ValidationAttribute
     private readonly int _maxDaysInPast;
     private readonly int _maxDaysInFuture;
 
-    public DateRangeAttribute(int maxDaysInPast = 365, int maxDaysInFuture = 1)
+    public DateRangeAttribute(int maxDaysInPast = 365, int maxDaysInFuture = 7)
     {
         _maxDaysInPast = maxDaysInPast;
         _maxDaysInFuture = maxDaysInFuture;
@@ -46,10 +56,24 @@ public class DateRangeAttribute : ValidationAttribute
         if (value is DateTime date)
         {
             var now = DateTime.UtcNow;
-            var minDate = now.AddDays(-_maxDaysInPast);
-            var maxDate = now.AddDays(_maxDaysInFuture);
+            // Add a small buffer to account for timing differences
+            var buffer = TimeSpan.FromMinutes(1);
+            var minDate = now.AddDays(-_maxDaysInPast).Add(-buffer);
+            var maxDate = now.AddDays(_maxDaysInFuture).Add(buffer);
 
-            if (date < minDate || date > maxDate)
+            // Add some debugging information
+            Console.WriteLine($"DateRange validation - Input date: {date:yyyy-MM-dd HH:mm:ss} UTC");
+            Console.WriteLine($"DateRange validation - Current time: {now:yyyy-MM-dd HH:mm:ss} UTC");
+            Console.WriteLine($"DateRange validation - Min date: {minDate:yyyy-MM-dd HH:mm:ss} UTC");
+            Console.WriteLine($"DateRange validation - Max date: {maxDate:yyyy-MM-dd HH:mm:ss} UTC");
+
+            var isLessThanMin = date < minDate;
+            var isGreaterThanMax = date > maxDate;
+            
+            Console.WriteLine($"DateRange validation - Is less than min: {isLessThanMin}");
+            Console.WriteLine($"DateRange validation - Is greater than max: {isGreaterThanMax}");
+            
+            if (isLessThanMin || isGreaterThanMax)
             {
                 return new ValidationResult(
                     ErrorMessage ?? $"Date must be within {_maxDaysInPast} days in the past and {_maxDaysInFuture} days in the future.");

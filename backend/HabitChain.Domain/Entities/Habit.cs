@@ -25,6 +25,8 @@ public class Habit : BaseEntity
     public int LongestStreak { get; set; } = 0;
     // This tells me the last time I completed this habit.
     public DateTime? LastCompletedAt { get; set; }
+    // This is the target number of days for this habit.
+    public int TargetDays { get; set; } = 1;
     
     // Navigation properties help me link this habit to other things in the system.
     // This is the user who owns the habit (me).

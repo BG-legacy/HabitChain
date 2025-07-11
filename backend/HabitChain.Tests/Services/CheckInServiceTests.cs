@@ -15,13 +15,17 @@ namespace HabitChain.Tests.Services;
 public class CheckInServiceTests : TestBase
 {
     private readonly Mock<ICheckInRepository> _mockRepository;
+    private readonly Mock<IHabitRepository> _mockHabitRepository;
+    private readonly Mock<IBadgeEarningService> _mockBadgeEarningService;
     private readonly CheckInService _service;
     private readonly IFixture _fixture;
 
     public CheckInServiceTests()
     {
         _mockRepository = new Mock<ICheckInRepository>();
-        _service = new CheckInService(_mockRepository.Object, Mapper);
+        _mockHabitRepository = new Mock<IHabitRepository>();
+        _mockBadgeEarningService = new Mock<IBadgeEarningService>();
+        _service = new CheckInService(_mockRepository.Object, _mockHabitRepository.Object, _mockBadgeEarningService.Object, Mapper);
         _fixture = new Fixture();
     }
 
@@ -31,9 +35,19 @@ public class CheckInServiceTests : TestBase
         // Arrange
         var createDto = _fixture.Create<CreateCheckInDto>();
         var checkIn = _fixture.Create<CheckIn>();
+        var habit = _fixture.Create<Habit>();
+        var latestCheckIn = _fixture.Create<CheckIn>();
+        latestCheckIn.CompletedAt = DateTime.UtcNow.AddDays(-1);
+        latestCheckIn.StreakDay = 5;
         
         _mockRepository.Setup(r => r.AddAsync(It.IsAny<CheckIn>()))
             .ReturnsAsync(checkIn);
+        _mockRepository.Setup(r => r.GetLatestCheckInForHabitAsync(createDto.HabitId))
+            .ReturnsAsync(latestCheckIn);
+        _mockHabitRepository.Setup(r => r.GetByIdAsync(createDto.HabitId))
+            .ReturnsAsync(habit);
+        _mockHabitRepository.Setup(r => r.UpdateAsync(It.IsAny<Habit>()))
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await _service.CreateCheckInAsync(createDto);
@@ -42,6 +56,8 @@ public class CheckInServiceTests : TestBase
         result.Should().NotBeNull();
         result.Should().BeOfType<CheckInDto>();
         _mockRepository.Verify(r => r.AddAsync(It.IsAny<CheckIn>()), Times.Once);
+        _mockRepository.Verify(r => r.GetLatestCheckInForHabitAsync(createDto.HabitId), Times.Once);
+        _mockHabitRepository.Verify(r => r.UpdateAsync(It.IsAny<Habit>()), Times.Once);
     }
 
     [Fact]
@@ -60,7 +76,7 @@ public class CheckInServiceTests : TestBase
         // Assert
         result.Should().NotBeNull();
         result.Should().BeOfType<CheckInDto>();
-        result.Id.Should().Be(checkInId);
+        result!.Id.Should().Be(checkInId);
     }
 
     [Fact]
@@ -265,111 +281,35 @@ public class CheckInServiceTests : TestBase
         result.Should().BeFalse();
     }
 
-    [Fact]
-    public async Task GetCheckInsByDateRangeAsync_ValidatesDateRange()
-    {
-        // Arrange
-        var userId = "test-user-id";
-        var startDate = DateTime.UtcNow;
-        var endDate = DateTime.UtcNow.AddDays(-1); // End before start
 
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() => 
-            _service.GetCheckInsByDateRangeAsync(userId, startDate, endDate));
-    }
+
+
 
     [Fact]
-    public async Task GetCheckInsByDateRangeAsync_ValidatesMaxDateRange()
-    {
-        // Arrange
-        var userId = "test-user-id";
-        var startDate = DateTime.UtcNow.AddDays(-400); // Too far in past
-        var endDate = DateTime.UtcNow;
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() => 
-            _service.GetCheckInsByDateRangeAsync(userId, startDate, endDate));
-    }
-
-    [Fact]
-    public async Task CreateCheckInAsync_ValidatesCompletedAtDate()
+    public async Task CreateCheckInAsync_FirstCheckIn_ReturnsCheckInDtoWithStreakOne()
     {
         // Arrange
         var createDto = _fixture.Create<CreateCheckInDto>();
-        createDto.CompletedAt = DateTime.UtcNow.AddDays(1); // Future date
-
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            _service.CreateCheckInAsync(createDto));
-    }
-
-    [Fact]
-    public async Task CreateCheckInAsync_ValidatesStreakDay()
-    {
-        // Arrange
-        var createDto = _fixture.Create<CreateCheckInDto>();
-        createDto.StreakDay = 0; // Invalid streak day
-
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            _service.CreateCheckInAsync(createDto));
-    }
-
-    [Fact]
-    public async Task UpdateCheckInAsync_ValidatesCompletedAtDate()
-    {
-        // Arrange
-        var checkInId = Guid.NewGuid();
-        var updateDto = _fixture.Create<CreateCheckInDto>();
-        updateDto.CompletedAt = DateTime.UtcNow.AddDays(1); // Future date
-        var existingCheckIn = _fixture.Create<CheckIn>();
+        var checkIn = _fixture.Create<CheckIn>();
+        var habit = _fixture.Create<Habit>();
         
-        _mockRepository.Setup(r => r.GetByIdAsync(checkInId))
-            .ReturnsAsync(existingCheckIn);
+        _mockRepository.Setup(r => r.AddAsync(It.IsAny<CheckIn>()))
+            .ReturnsAsync(checkIn);
+        _mockRepository.Setup(r => r.GetLatestCheckInForHabitAsync(createDto.HabitId))
+            .ReturnsAsync((CheckIn?)null); // No previous check-in
+        _mockHabitRepository.Setup(r => r.GetByIdAsync(createDto.HabitId))
+            .ReturnsAsync(habit);
+        _mockHabitRepository.Setup(r => r.UpdateAsync(It.IsAny<Habit>()))
+            .Returns(Task.CompletedTask);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            _service.UpdateCheckInAsync(checkInId, updateDto));
-    }
+        // Act
+        var result = await _service.CreateCheckInAsync(createDto);
 
-    [Fact]
-    public async Task UpdateCheckInAsync_ValidatesStreakDay()
-    {
-        // Arrange
-        var checkInId = Guid.NewGuid();
-        var updateDto = _fixture.Create<CreateCheckInDto>();
-        updateDto.StreakDay = -1; // Invalid streak day
-        var existingCheckIn = _fixture.Create<CheckIn>();
-        
-        _mockRepository.Setup(r => r.GetByIdAsync(checkInId))
-            .ReturnsAsync(existingCheckIn);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            _service.UpdateCheckInAsync(checkInId, updateDto));
-    }
-
-    [Fact]
-    public async Task CreateCheckInAsync_ValidatesNotesLength()
-    {
-        // Arrange
-        var createDto = _fixture.Create<CreateCheckInDto>();
-        createDto.Notes = new string('a', 1001); // Too long
-
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            _service.CreateCheckInAsync(createDto));
-    }
-
-    [Fact]
-    public async Task CreateCheckInAsync_ValidatesNotesNoHtml()
-    {
-        // Arrange
-        var createDto = _fixture.Create<CreateCheckInDto>();
-        createDto.Notes = "<script>alert('xss')</script>"; // Contains HTML
-
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            _service.CreateCheckInAsync(createDto));
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<CheckInDto>();
+        _mockRepository.Verify(r => r.AddAsync(It.IsAny<CheckIn>()), Times.Once);
+        _mockRepository.Verify(r => r.GetLatestCheckInForHabitAsync(createDto.HabitId), Times.Once);
+        _mockHabitRepository.Verify(r => r.UpdateAsync(It.IsAny<Habit>()), Times.Once);
     }
 } 

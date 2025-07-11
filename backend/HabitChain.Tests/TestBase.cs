@@ -16,8 +16,12 @@ public abstract class TestBase
 
     protected TestBase()
     {
-        Fixture = new Fixture()
-            .Customize(new AutoMoqCustomization());
+        Fixture = new Fixture();
+        Fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => Fixture.Behaviors.Remove(b));
+        Fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        
+        Fixture.Customize(new AutoMoqCustomization());
 
         // Configure AutoMapper
         var mapperConfig = new MapperConfiguration(cfg =>

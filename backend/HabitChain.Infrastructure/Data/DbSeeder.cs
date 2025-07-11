@@ -17,26 +17,72 @@ public static class DbSeeder
         {
             var badges = new List<Badge>
             {
-                // Streak Badges
+                // 🎯 Milestone Badges
                 new Badge
                 {
                     Id = Guid.NewGuid(),
                     Name = "First Steps",
-                    Description = "Complete your first habit check-in",
+                    Description = "Create your very first habit",
                     IconUrl = "/icons/first-steps.svg",
-                    Type = BadgeType.Streak,
+                    Emoji = "🎯",
+                    Type = BadgeType.Milestone,
+                    Category = "milestone",
+                    Rarity = "common",
                     RequiredValue = 1,
-                    IsActive = true
+                    IsActive = true,
+                    ColorTheme = "#28a745",
+                    IsSecret = false,
+                    DisplayOrder = 1
                 },
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Habit Collector",
+                    Description = "Create 5 different habits",
+                    IconUrl = "/icons/habit-collector.svg",
+                    Emoji = "📚",
+                    Type = BadgeType.Milestone,
+                    Category = "milestone",
+                    Rarity = "rare",
+                    RequiredValue = 5,
+                    IsActive = true,
+                    ColorTheme = "#007bff",
+                    IsSecret = false,
+                    DisplayOrder = 2
+                },
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Habit Master",
+                    Description = "Create 10 different habits",
+                    IconUrl = "/icons/habit-master.svg",
+                    Emoji = "👑",
+                    Type = BadgeType.Milestone,
+                    Category = "milestone",
+                    Rarity = "epic",
+                    RequiredValue = 10,
+                    IsActive = true,
+                    ColorTheme = "#6f42c1",
+                    IsSecret = false,
+                    DisplayOrder = 3
+                },
+
+                // 🔥 Streak Badges
                 new Badge
                 {
                     Id = Guid.NewGuid(),
                     Name = "Week Warrior",
                     Description = "Maintain a 7-day streak",
                     IconUrl = "/icons/week-warrior.svg",
+                    Emoji = "🔥",
                     Type = BadgeType.Streak,
+                    Category = "streak",
+                    Rarity = "common",
                     RequiredValue = 7,
-                    IsActive = true
+                    IsActive = true,
+                    ColorTheme = "#fd7e14",
+                    IsSecret = false,
+                    DisplayOrder = 4
                 },
                 new Badge
                 {
@@ -44,9 +90,15 @@ public static class DbSeeder
                     Name = "Month Master",
                     Description = "Maintain a 30-day streak",
                     IconUrl = "/icons/month-master.svg",
+                    Emoji = "🏆",
                     Type = BadgeType.Streak,
+                    Category = "streak",
+                    Rarity = "rare",
                     RequiredValue = 30,
-                    IsActive = true
+                    IsActive = true,
+                    ColorTheme = "#007bff",
+                    IsSecret = false,
+                    DisplayOrder = 5
                 },
                 new Badge
                 {
@@ -54,21 +106,33 @@ public static class DbSeeder
                     Name = "Century Club",
                     Description = "Maintain a 100-day streak",
                     IconUrl = "/icons/century-club.svg",
+                    Emoji = "💎",
                     Type = BadgeType.Streak,
+                    Category = "streak",
+                    Rarity = "legendary",
                     RequiredValue = 100,
-                    IsActive = true
+                    IsActive = true,
+                    ColorTheme = "#fd7e14",
+                    IsSecret = false,
+                    DisplayOrder = 6
                 },
 
-                // Total Badges
+                // 📊 Total Badges
                 new Badge
                 {
                     Id = Guid.NewGuid(),
                     Name = "Getting Started",
                     Description = "Complete 10 total check-ins",
                     IconUrl = "/icons/getting-started.svg",
+                    Emoji = "📊",
                     Type = BadgeType.Total,
+                    Category = "milestone",
+                    Rarity = "common",
                     RequiredValue = 10,
-                    IsActive = true
+                    IsActive = true,
+                    ColorTheme = "#28a745",
+                    IsSecret = false,
+                    DisplayOrder = 7
                 },
                 new Badge
                 {
@@ -76,9 +140,15 @@ public static class DbSeeder
                     Name = "Habit Builder",
                     Description = "Complete 50 total check-ins",
                     IconUrl = "/icons/habit-builder.svg",
+                    Emoji = "🏗️",
                     Type = BadgeType.Total,
+                    Category = "milestone",
+                    Rarity = "rare",
                     RequiredValue = 50,
-                    IsActive = true
+                    IsActive = true,
+                    ColorTheme = "#007bff",
+                    IsSecret = false,
+                    DisplayOrder = 8
                 },
                 new Badge
                 {
@@ -86,43 +156,49 @@ public static class DbSeeder
                     Name = "Dedication Master",
                     Description = "Complete 500 total check-ins",
                     IconUrl = "/icons/dedication-master.svg",
+                    Emoji = "🎖️",
                     Type = BadgeType.Total,
+                    Category = "milestone",
+                    Rarity = "epic",
                     RequiredValue = 500,
-                    IsActive = true
-                },
-
-                // Consistency Badges
-                new Badge
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Consistent Performer",
-                    Description = "Maintain 80% consistency for a month",
-                    IconUrl = "/icons/consistent-performer.svg",
-                    Type = BadgeType.Consistency,
-                    RequiredValue = 80,
-                    IsActive = true
+                    IsActive = true,
+                    ColorTheme = "#6f42c1",
+                    IsSecret = false,
+                    DisplayOrder = 9
                 },
                 new Badge
                 {
                     Id = Guid.NewGuid(),
-                    Name = "Perfectionist",
-                    Description = "Maintain 100% consistency for a week",
-                    IconUrl = "/icons/perfectionist.svg",
-                    Type = BadgeType.Consistency,
-                    RequiredValue = 100,
-                    IsActive = true
+                    Name = "Legend",
+                    Description = "Complete 1000 total check-ins",
+                    IconUrl = "/icons/legend.svg",
+                    Emoji = "🌟",
+                    Type = BadgeType.Total,
+                    Category = "milestone",
+                    Rarity = "legendary",
+                    RequiredValue = 1000,
+                    IsActive = true,
+                    ColorTheme = "#fd7e14",
+                    IsSecret = false,
+                    DisplayOrder = 10
                 },
 
-                // Special Badges
+                // ⏰ Time-based Badges
                 new Badge
                 {
                     Id = Guid.NewGuid(),
                     Name = "Early Bird",
                     Description = "Complete 10 check-ins before 8 AM",
                     IconUrl = "/icons/early-bird.svg",
-                    Type = BadgeType.Special,
+                    Emoji = "🌅",
+                    Type = BadgeType.TimeBased,
+                    Category = "time",
+                    Rarity = "rare",
                     RequiredValue = 10,
-                    IsActive = true
+                    IsActive = true,
+                    ColorTheme = "#ffc107",
+                    IsSecret = false,
+                    DisplayOrder = 11
                 },
                 new Badge
                 {
@@ -130,9 +206,233 @@ public static class DbSeeder
                     Name = "Night Owl",
                     Description = "Complete 10 check-ins after 10 PM",
                     IconUrl = "/icons/night-owl.svg",
-                    Type = BadgeType.Special,
+                    Emoji = "🦉",
+                    Type = BadgeType.TimeBased,
+                    Category = "time",
+                    Rarity = "rare",
                     RequiredValue = 10,
-                    IsActive = true
+                    IsActive = true,
+                    ColorTheme = "#6f42c1",
+                    IsSecret = false,
+                    DisplayOrder = 12
+                },
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Weekend Warrior",
+                    Description = "Complete 20 check-ins on weekends",
+                    IconUrl = "/icons/weekend-warrior.svg",
+                    Emoji = "🎉",
+                    Type = BadgeType.TimeBased,
+                    Category = "time",
+                    Rarity = "epic",
+                    RequiredValue = 20,
+                    IsActive = true,
+                    ColorTheme = "#fd7e14",
+                    IsSecret = false,
+                    DisplayOrder = 13
+                },
+
+                // 🎯 Challenge Badges
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "7-Day Challenge",
+                    Description = "Complete check-ins for 7 consecutive days",
+                    IconUrl = "/icons/7-day-challenge.svg",
+                    Emoji = "🎯",
+                    Type = BadgeType.Challenge,
+                    Category = "challenge",
+                    Rarity = "common",
+                    RequiredValue = 7,
+                    IsActive = true,
+                    ColorTheme = "#28a745",
+                    IsSecret = false,
+                    DisplayOrder = 14
+                },
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "30-Day Challenge",
+                    Description = "Complete check-ins for 30 consecutive days",
+                    IconUrl = "/icons/30-day-challenge.svg",
+                    Emoji = "🏆",
+                    Type = BadgeType.Challenge,
+                    Category = "challenge",
+                    Rarity = "epic",
+                    RequiredValue = 30,
+                    IsActive = true,
+                    ColorTheme = "#6f42c1",
+                    IsSecret = false,
+                    DisplayOrder = 15
+                },
+
+                // 🌸 Seasonal Badges
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Spring Bloom",
+                    Description = "Complete 50 check-ins during spring",
+                    IconUrl = "/icons/spring-bloom.svg",
+                    Emoji = "🌸",
+                    Type = BadgeType.Seasonal,
+                    Category = "seasonal",
+                    Rarity = "rare",
+                    RequiredValue = 50,
+                    IsActive = true,
+                    ColorTheme = "#28a745",
+                    IsSecret = false,
+                    DisplayOrder = 16
+                },
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Summer Heat",
+                    Description = "Complete 50 check-ins during summer",
+                    IconUrl = "/icons/summer-heat.svg",
+                    Emoji = "☀️",
+                    Type = BadgeType.Seasonal,
+                    Category = "seasonal",
+                    Rarity = "rare",
+                    RequiredValue = 50,
+                    IsActive = true,
+                    ColorTheme = "#fd7e14",
+                    IsSecret = false,
+                    DisplayOrder = 17
+                },
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Autumn Colors",
+                    Description = "Complete 50 check-ins during fall",
+                    IconUrl = "/icons/autumn-colors.svg",
+                    Emoji = "🍂",
+                    Type = BadgeType.Seasonal,
+                    Category = "seasonal",
+                    Rarity = "rare",
+                    RequiredValue = 50,
+                    IsActive = true,
+                    ColorTheme = "#fd7e14",
+                    IsSecret = false,
+                    DisplayOrder = 18
+                },
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Winter Frost",
+                    Description = "Complete 50 check-ins during winter",
+                    IconUrl = "/icons/winter-frost.svg",
+                    Emoji = "❄️",
+                    Type = BadgeType.Seasonal,
+                    Category = "seasonal",
+                    Rarity = "rare",
+                    RequiredValue = 50,
+                    IsActive = true,
+                    ColorTheme = "#17a2b8",
+                    IsSecret = false,
+                    DisplayOrder = 19
+                },
+
+                // 💎 Rarity Badges
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Perfect Week",
+                    Description = "Complete all habits for 7 consecutive days",
+                    IconUrl = "/icons/perfect-week.svg",
+                    Emoji = "💎",
+                    Type = BadgeType.Rarity,
+                    Category = "rarity",
+                    Rarity = "legendary",
+                    RequiredValue = 7,
+                    IsActive = true,
+                    ColorTheme = "#fd7e14",
+                    IsSecret = true,
+                    DisplayOrder = 20
+                },
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Streak Master",
+                    Description = "Maintain 10+ day streaks on 3 different habits",
+                    IconUrl = "/icons/streak-master.svg",
+                    Emoji = "🔥",
+                    Type = BadgeType.Rarity,
+                    Category = "rarity",
+                    Rarity = "epic",
+                    RequiredValue = 3,
+                    IsActive = true,
+                    ColorTheme = "#6f42c1",
+                    IsSecret = false,
+                    DisplayOrder = 21
+                },
+
+                // ⛓️ Chain Badges
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Habit Chain",
+                    Description = "Maintain 5 active habits simultaneously",
+                    IconUrl = "/icons/habit-chain.svg",
+                    Emoji = "⛓️",
+                    Type = BadgeType.Chain,
+                    Category = "chain",
+                    Rarity = "epic",
+                    RequiredValue = 5,
+                    IsActive = true,
+                    ColorTheme = "#6f42c1",
+                    IsSecret = false,
+                    DisplayOrder = 22
+                },
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Category Master",
+                    Description = "Create habits in 5 different categories",
+                    IconUrl = "/icons/category-master.svg",
+                    Emoji = "📂",
+                    Type = BadgeType.Chain,
+                    Category = "chain",
+                    Rarity = "rare",
+                    RequiredValue = 5,
+                    IsActive = true,
+                    ColorTheme = "#007bff",
+                    IsSecret = false,
+                    DisplayOrder = 23
+                },
+
+                // 📈 Consistency Badges
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Consistent Performer",
+                    Description = "Maintain 80% consistency for a month",
+                    IconUrl = "/icons/consistent-performer.svg",
+                    Emoji = "📈",
+                    Type = BadgeType.Consistency,
+                    Category = "consistency",
+                    Rarity = "rare",
+                    RequiredValue = 80,
+                    IsActive = true,
+                    ColorTheme = "#007bff",
+                    IsSecret = false,
+                    DisplayOrder = 24
+                },
+                new Badge
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Perfectionist",
+                    Description = "Maintain 100% consistency for a week",
+                    IconUrl = "/icons/perfectionist.svg",
+                    Emoji = "✨",
+                    Type = BadgeType.Consistency,
+                    Category = "consistency",
+                    Rarity = "legendary",
+                    RequiredValue = 100,
+                    IsActive = true,
+                    ColorTheme = "#fd7e14",
+                    IsSecret = false,
+                    DisplayOrder = 25
                 }
             };
 
@@ -199,49 +499,31 @@ public static class DbSeeder
                 new Habit
                 {
                     Id = Guid.NewGuid(),
+                    UserId = "test-user-1",
                     Name = "Morning Exercise",
                     Description = "30 minutes of cardio and strength training",
                     Frequency = HabitFrequency.Daily,
-                    UserId = "test-user-1",
+                    TargetDays = 7,
                     IsActive = true,
-                    Color = "#4CAF50",
-                    IconName = "fitness",
-                    CurrentStreak = 15,
-                    LongestStreak = 25,
-                    LastCompletedAt = DateTime.UtcNow.AddHours(-2),
-                    CreatedAt = DateTime.UtcNow.AddDays(-30),
-                    UpdatedAt = DateTime.UtcNow
-                },
-                new Habit
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Read Books",
-                    Description = "Read at least 20 pages daily",
-                    Frequency = HabitFrequency.Daily,
-                    UserId = "test-user-1",
-                    IsActive = true,
-                    Color = "#2196F3",
-                    IconName = "book",
-                    CurrentStreak = 8,
+                    CurrentStreak = 5,
                     LongestStreak = 12,
-                    LastCompletedAt = DateTime.UtcNow.AddHours(-4),
-                    CreatedAt = DateTime.UtcNow.AddDays(-25),
+                    LastCompletedAt = DateTime.UtcNow.AddHours(-2),
+                    CreatedAt = DateTime.UtcNow.AddDays(-15),
                     UpdatedAt = DateTime.UtcNow
                 },
                 new Habit
                 {
                     Id = Guid.NewGuid(),
-                    Name = "Meditation",
-                    Description = "10 minutes of mindfulness meditation",
-                    Frequency = HabitFrequency.Daily,
                     UserId = "test-user-1",
+                    Name = "Read 30 Minutes",
+                    Description = "Read a book for 30 minutes before bed",
+                    Frequency = HabitFrequency.Daily,
+                    TargetDays = 7,
                     IsActive = true,
-                    Color = "#9C27B0",
-                    IconName = "meditation",
-                    CurrentStreak = 22,
-                    LongestStreak = 22,
-                    LastCompletedAt = DateTime.UtcNow.AddHours(-1),
-                    CreatedAt = DateTime.UtcNow.AddDays(-22),
+                    CurrentStreak = 3,
+                    LongestStreak = 8,
+                    LastCompletedAt = DateTime.UtcNow.AddDays(-1),
+                    CreatedAt = DateTime.UtcNow.AddDays(-20),
                     UpdatedAt = DateTime.UtcNow
                 },
 
@@ -249,33 +531,31 @@ public static class DbSeeder
                 new Habit
                 {
                     Id = Guid.NewGuid(),
-                    Name = "Drink Water",
-                    Description = "Drink 8 glasses of water daily",
-                    Frequency = HabitFrequency.Daily,
                     UserId = "test-user-2",
+                    Name = "Meditation",
+                    Description = "10 minutes of mindfulness meditation",
+                    Frequency = HabitFrequency.Daily,
+                    TargetDays = 7,
                     IsActive = true,
-                    Color = "#00BCD4",
-                    IconName = "water",
-                    CurrentStreak = 5,
-                    LongestStreak = 18,
-                    LastCompletedAt = DateTime.UtcNow.AddHours(-3),
-                    CreatedAt = DateTime.UtcNow.AddDays(-25),
+                    CurrentStreak = 7,
+                    LongestStreak = 7,
+                    LastCompletedAt = DateTime.UtcNow.AddHours(-1),
+                    CreatedAt = DateTime.UtcNow.AddDays(-10),
                     UpdatedAt = DateTime.UtcNow
                 },
                 new Habit
                 {
                     Id = Guid.NewGuid(),
-                    Name = "Practice Guitar",
-                    Description = "Practice guitar for 30 minutes",
-                    Frequency = HabitFrequency.Daily,
                     UserId = "test-user-2",
+                    Name = "Drink Water",
+                    Description = "Drink 8 glasses of water daily",
+                    Frequency = HabitFrequency.Daily,
+                    TargetDays = 7,
                     IsActive = true,
-                    Color = "#FF9800",
-                    IconName = "music",
-                    CurrentStreak = 12,
-                    LongestStreak = 12,
-                    LastCompletedAt = DateTime.UtcNow.AddHours(-6),
-                    CreatedAt = DateTime.UtcNow.AddDays(-20),
+                    CurrentStreak = 2,
+                    LongestStreak = 5,
+                    LastCompletedAt = DateTime.UtcNow.AddHours(-3),
+                    CreatedAt = DateTime.UtcNow.AddDays(-12),
                     UpdatedAt = DateTime.UtcNow
                 },
 
@@ -283,33 +563,16 @@ public static class DbSeeder
                 new Habit
                 {
                     Id = Guid.NewGuid(),
-                    Name = "Coding Practice",
-                    Description = "Work on coding projects for 1 hour",
+                    UserId = "test-user-3",
+                    Name = "Write Journal",
+                    Description = "Write in journal for 15 minutes",
                     Frequency = HabitFrequency.Daily,
-                    UserId = "test-user-3",
+                    TargetDays = 7,
                     IsActive = true,
-                    Color = "#607D8B",
-                    IconName = "code",
-                    CurrentStreak = 3,
-                    LongestStreak = 10,
-                    LastCompletedAt = DateTime.UtcNow.AddHours(-8),
-                    CreatedAt = DateTime.UtcNow.AddDays(-20),
-                    UpdatedAt = DateTime.UtcNow
-                },
-                new Habit
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Weekly Review",
-                    Description = "Review goals and plan for next week",
-                    Frequency = HabitFrequency.Weekly,
-                    UserId = "test-user-3",
-                    IsActive = true,
-                    Color = "#795548",
-                    IconName = "calendar",
-                    CurrentStreak = 2,
-                    LongestStreak = 4,
-                    LastCompletedAt = DateTime.UtcNow.AddDays(-2),
-                    CreatedAt = DateTime.UtcNow.AddDays(-20),
+                    CurrentStreak = 1,
+                    LongestStreak = 3,
+                    LastCompletedAt = DateTime.UtcNow.AddDays(-1),
+                    CreatedAt = DateTime.UtcNow.AddDays(-5),
                     UpdatedAt = DateTime.UtcNow
                 }
             };
@@ -318,64 +581,27 @@ public static class DbSeeder
             await context.SaveChangesAsync();
         }
 
-        // Seed test habit entries if they don't exist
-        if (!await context.HabitEntries.AnyAsync())
-        {
-            var habits = await context.Habits.ToListAsync();
-            var entries = new List<HabitEntry>();
-
-            foreach (var habit in habits)
-            {
-                // Create entries for the last 30 days
-                for (int i = 0; i < 30; i++)
-                {
-                    var entryDate = DateTime.UtcNow.AddDays(-i);
-                    
-                    // Skip some days randomly to simulate real usage
-                    if (new Random().Next(1, 10) > 2) // 80% completion rate
-                    {
-                        entries.Add(new HabitEntry
-                        {
-                            Id = Guid.NewGuid(),
-                            HabitId = habit.Id,
-                            CompletedAt = entryDate.AddHours(new Random().Next(6, 22)), // Random time during day
-                            Notes = i % 5 == 0 ? $"Great progress on day {30 - i}!" : null,
-                            CreatedAt = entryDate,
-                            UpdatedAt = entryDate
-                        });
-                    }
-                }
-            }
-
-            await context.HabitEntries.AddRangeAsync(entries);
-            await context.SaveChangesAsync();
-        }
-
         // Seed test check-ins if they don't exist
         if (!await context.CheckIns.AnyAsync())
         {
+            var testCheckIns = new List<CheckIn>();
             var habits = await context.Habits.ToListAsync();
-            var checkIns = new List<CheckIn>();
 
             foreach (var habit in habits)
             {
-                // Create check-ins for the last 7 days
+                // Generate some check-ins for the past week
                 for (int i = 0; i < 7; i++)
                 {
                     var checkInDate = DateTime.UtcNow.AddDays(-i);
-                    
-                    // 90% check-in rate
-                    if (new Random().Next(1, 10) > 1)
+                    if (i < habit.CurrentStreak) // Only create check-ins for the current streak
                     {
-                        checkIns.Add(new CheckIn
+                        testCheckIns.Add(new CheckIn
                         {
                             Id = Guid.NewGuid(),
-                            HabitId = habit.Id,
                             UserId = habit.UserId,
-                            CompletedAt = checkInDate.AddHours(new Random().Next(6, 22)),
-                            Notes = i % 3 == 0 ? $"Feeling good about progress!" : null,
-                            StreakDay = i + 1,
-                            IsManualEntry = new Random().Next(0, 2) == 1,
+                            HabitId = habit.Id,
+                            CompletedAt = checkInDate,
+                            StreakDay = habit.CurrentStreak - i,
                             CreatedAt = checkInDate,
                             UpdatedAt = checkInDate
                         });
@@ -383,68 +609,40 @@ public static class DbSeeder
                 }
             }
 
-            await context.CheckIns.AddRangeAsync(checkIns);
-            await context.SaveChangesAsync();
-        }
-
-        // Seed test user badges if they don't exist
-        if (!await context.UserBadges.AnyAsync())
-        {
-            var badges = await context.Badges.ToListAsync();
-            var users = await context.Users.ToListAsync();
-            var userBadges = new List<UserBadge>();
-
-            foreach (var user in users)
-            {
-                // Award some badges to each user
-                var userBadgeCount = new Random().Next(2, 5);
-                var selectedBadges = badges.OrderBy(x => Guid.NewGuid()).Take(userBadgeCount);
-
-                foreach (var badge in selectedBadges)
-                {
-                    userBadges.Add(new UserBadge
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = user.Id,
-                        BadgeId = badge.Id,
-                        EarnedAt = DateTime.UtcNow.AddDays(-new Random().Next(1, 30)),
-                        CreatedAt = DateTime.UtcNow.AddDays(-new Random().Next(1, 30)),
-                        UpdatedAt = DateTime.UtcNow.AddDays(-new Random().Next(1, 30))
-                    });
-                }
-            }
-
-            await context.UserBadges.AddRangeAsync(userBadges);
+            await context.CheckIns.AddRangeAsync(testCheckIns);
             await context.SaveChangesAsync();
         }
 
         // Seed test encouragements if they don't exist
         if (!await context.Encouragements.AnyAsync())
         {
-            var users = await context.Users.ToListAsync();
-            var encouragements = new List<Encouragement>();
-
-            // Create some encouragements between users
-            for (int i = 0; i < 10; i++)
+            var encouragements = new List<Encouragement>
             {
-                var sender = users[new Random().Next(users.Count)];
-                var receiver = users.FirstOrDefault(u => u.Id != sender.Id);
-                
-                if (receiver != null)
+                new Encouragement
                 {
-                    encouragements.Add(new Encouragement
-                    {
-                        Id = Guid.NewGuid(),
-                        FromUserId = sender.Id,
-                        ToUserId = receiver.Id,
-                        Type = (EncouragementType)new Random().Next(0, 3),
-                        Message = GetRandomEncouragementMessage(),
-                        IsRead = new Random().Next(0, 2) == 1,
-                        CreatedAt = DateTime.UtcNow.AddDays(-new Random().Next(1, 15)),
-                        UpdatedAt = DateTime.UtcNow.AddDays(-new Random().Next(1, 15))
-                    });
+                    Id = Guid.NewGuid(),
+                    FromUserId = "test-user-1",
+                    ToUserId = "test-user-2",
+                    HabitId = context.Habits.First(h => h.UserId == "test-user-2").Id,
+                    Message = "Great job with your meditation habit! Keep it up!",
+                    Type = EncouragementType.Support,
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow.AddDays(-1),
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new Encouragement
+                {
+                    Id = Guid.NewGuid(),
+                    FromUserId = "test-user-2",
+                    ToUserId = "test-user-1",
+                    HabitId = context.Habits.First(h => h.UserId == "test-user-1").Id,
+                    Message = "Your exercise routine is inspiring! You're doing amazing!",
+                    Type = EncouragementType.Motivation,
+                    IsRead = true,
+                    CreatedAt = DateTime.UtcNow.AddDays(-2),
+                    UpdatedAt = DateTime.UtcNow
                 }
-            }
+            };
 
             await context.Encouragements.AddRangeAsync(encouragements);
             await context.SaveChangesAsync();
@@ -455,18 +653,19 @@ public static class DbSeeder
     {
         var messages = new[]
         {
-            "You're doing amazing! Keep up the great work! 💪",
-            "Every step counts towards your goals! 🌟",
-            "You've got this! Your consistency is inspiring! ✨",
-            "Don't give up! You're making incredible progress! 🎯",
-            "Your dedication is truly remarkable! Keep going! 🚀",
-            "Small steps lead to big changes! You're on fire! 🔥",
-            "Your habit-building journey is inspiring others! 🌈",
-            "Remember why you started! You're unstoppable! 💎",
-            "Every day is a new opportunity to grow! 🌱",
-            "Your future self will thank you for this! 🙏"
+            "You're doing great! Keep up the amazing work!",
+            "Every step counts towards your goals!",
+            "You're building a better version of yourself!",
+            "Consistency is the key to success!",
+            "Your dedication is inspiring!",
+            "You're making progress every day!",
+            "Keep pushing forward, you've got this!",
+            "Your habits are shaping your future!",
+            "Small actions lead to big changes!",
+            "You're creating positive change in your life!"
         };
 
-        return messages[new Random().Next(messages.Length)];
+        var random = new Random();
+        return messages[random.Next(messages.Length)];
     }
 } 

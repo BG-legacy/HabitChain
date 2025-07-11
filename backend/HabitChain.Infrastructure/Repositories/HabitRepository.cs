@@ -13,16 +13,26 @@ public class HabitRepository : Repository<Habit>, IHabitRepository
 
     public async Task<IEnumerable<Habit>> GetHabitsByUserIdAsync(string userId)
     {
-        return await _dbSet
+        var habits = await _dbSet
             .Where(h => h.UserId == userId)
+            .Include(h => h.CheckIns)
             .OrderBy(h => h.Name)
             .ToListAsync();
+            
+        // Debug logging
+        foreach (var habit in habits)
+        {
+            Console.WriteLine($"Repository - Habit: {habit.Name}, CheckIns Count: {habit.CheckIns?.Count ?? 0}");
+        }
+        
+        return habits;
     }
 
     public async Task<IEnumerable<Habit>> GetActiveHabitsByUserIdAsync(string userId)
     {
         return await _dbSet
             .Where(h => h.UserId == userId && h.IsActive)
+            .Include(h => h.CheckIns)
             .OrderBy(h => h.Name)
             .ToListAsync();
     }
@@ -31,6 +41,7 @@ public class HabitRepository : Repository<Habit>, IHabitRepository
     {
         return await _dbSet
             .Include(h => h.Entries)
+            .Include(h => h.CheckIns)
             .FirstOrDefaultAsync(h => h.Id == habitId);
     }
 } 
