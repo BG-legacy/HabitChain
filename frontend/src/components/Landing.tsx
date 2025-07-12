@@ -194,15 +194,15 @@ const Landing: React.FC = () => {
             </AnimatedCard>
             
             <AnimatedCard className="glass-card feature-card" delay={0.3}>
-              <AnimatedIcon className="feature-card-icon">🤝</AnimatedIcon>
-              <h3>Community Support</h3>
-              <p>Connect with like-minded individuals and receive encouragement from your community to stay motivated.</p>
+              <AnimatedIcon className="feature-card-icon">🤖</AnimatedIcon>
+              <h3>AI</h3>
+              <p>Get personalized habit recommendations and insights powered by artificial intelligence to optimize your routine.</p>
             </AnimatedCard>
             
             <AnimatedCard className="glass-card feature-card" delay={0.4}>
-              <AnimatedIcon className="feature-card-icon">🔔</AnimatedIcon>
-              <h3>Smart Reminders</h3>
-              <p>Never miss a habit with intelligent notifications that adapt to your schedule and preferences.</p>
+              <AnimatedIcon className="feature-card-icon">📊</AnimatedIcon>
+              <h3>Download Progress</h3>
+              <p>Export and download your habit progress data to track your journey and share your achievements.</p>
             </AnimatedCard>
           </motion.div>
         </motion.div>
