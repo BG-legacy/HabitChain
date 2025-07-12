@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HabitChain.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dd69e559630c75040902569093d66e5eeb9c68e1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7635fea5c63834a077385eb4fb79891004b72838")]
 [assembly: System.Reflection.AssemblyProductAttribute("HabitChain.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HabitChain.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
