@@ -60,20 +60,25 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
     {
-        // Check if user already exists
-        var existingUser = await _userManager.FindByEmailAsync(registerDto.Email);
-        if (existingUser != null)
+        // Optimized: Check if user already exists with single query
+        var existingUsers = await _userManager.Users
+            .Where(u => u.Email == registerDto.Email || u.UserName == registerDto.Username)
+            .FirstOrDefaultAsync();
+            
+        if (existingUsers != null)
         {
-            throw new InvalidOperationException("User with this email already exists.");
+            if (existingUsers.Email == registerDto.Email)
+            {
+                throw new InvalidOperationException("User with this email already exists.");
+            }
+            else
+            {
+                throw new InvalidOperationException("User with this username already exists.");
+            }
         }
 
-        existingUser = await _userManager.FindByNameAsync(registerDto.Username);
-        if (existingUser != null)
-        {
-            throw new InvalidOperationException("User with this username already exists.");
-        }
-
-        // Create new user
+        // Create new user with LastLoginAt set to avoid separate update
+        var currentTime = DateTime.UtcNow;
         var user = new User
         {
             UserName = registerDto.Username,
@@ -81,8 +86,9 @@ public class AuthService : IAuthService
             FirstName = registerDto.FirstName,
             LastName = registerDto.LastName,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = currentTime,
+            UpdatedAt = currentTime,
+            LastLoginAt = currentTime  // Set initial login time
         };
 
         var result = await _userManager.CreateAsync(user, registerDto.Password);
@@ -96,11 +102,8 @@ public class AuthService : IAuthService
         var accessToken = _jwtService.GenerateAccessToken(user);
         var refreshToken = _jwtService.GenerateRefreshToken();
         
-        // Save refresh token
+        // Save refresh token (this is async but we'll keep it for now)
         await _jwtService.SaveRefreshTokenAsync(user.Id, refreshToken);
-
-        // Update last login
-        await UpdateLastLoginAsync(user.Id);
 
         var userDto = _mapper.Map<UserDto>(user);
 

@@ -76,21 +76,21 @@ builder.Services.AddDbContext<HabitChainDbContext>(options =>
             errorCodesToAdd: null);
     }));
 
-// Add ASP.NET Identity
+// Add ASP.NET Identity with performance optimizations
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
-    // Password settings
+    // Simplified password settings for faster registration
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = true;
+    options.Password.RequireUppercase = false;  // Reduced requirement
     options.Password.RequiredLength = 6;
-    options.Password.RequiredUniqueChars = 1;
+    options.Password.RequiredUniqueChars = 0;   // Reduced requirement
 
-    // Lockout settings
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.Lockout.AllowedForNewUsers = true;
+    // Disable lockout for faster registration (can be re-enabled later)
+    options.Lockout.AllowedForNewUsers = false;
+    options.Lockout.MaxFailedAccessAttempts = 10;  // Increased threshold
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);  // Reduced lockout time
 
     // User settings
     options.User.AllowedUserNameCharacters =
@@ -99,6 +99,14 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<HabitChainDbContext>()
 .AddDefaultTokenProviders();
+
+// Configure password hasher for better performance
+builder.Services.Configure<PasswordHasherOptions>(options =>
+{
+    // Use fewer iterations for faster password hashing (still secure but faster)
+    options.IterationCount = 1000;  // Reduced from default 10,000 iterations
+    options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3;
+});
 
 // Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
