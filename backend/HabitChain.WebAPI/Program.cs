@@ -45,12 +45,20 @@ if (!string.IsNullOrEmpty(dbHost) && !string.IsNullOrEmpty(dbName) &&
 {
     var sslMode = Environment.GetEnvironmentVariable("DB_SSL_MODE") ?? "Require";
     var trustServerCertificate = Environment.GetEnvironmentVariable("DB_TRUST_SERVER_CERTIFICATE") ?? "true";
+    var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
     
-    connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPassword};Port=5432;SSL Mode={sslMode};Trust Server Certificate={trustServerCertificate}";
+    // Add additional parameters to handle IPv6 issues and improve connection stability
+    connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPassword};Port={port};SSL Mode={sslMode};Trust Server Certificate={trustServerCertificate};Pooling=true;MinPoolSize=1;MaxPoolSize=20;ConnectionIdleLifetime=300;ConnectionPruningInterval=10;Timeout=30;CommandTimeout=30;InternalCommandTimeout=60";
 }
 
 builder.Services.AddDbContext<HabitChainDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, npgsqlOptions =>
+    {
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorCodesToAdd: null);
+    }));
 
 // Add ASP.NET Identity
 builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -150,8 +158,23 @@ var app = builder.Build();
 // Seed the database
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<HabitChainDbContext>();
-    await DbSeeder.SeedAsync(context);
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<HabitChainDbContext>();
+        Console.WriteLine("Attempting to seed database...");
+        await DbSeeder.SeedAsync(context);
+        Console.WriteLine("Database seeding completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error during database seeding: {ex.Message}");
+        Console.WriteLine($"Exception type: {ex.GetType().Name}");
+        if (ex.InnerException != null)
+        {
+            Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+        }
+        // Don't throw here - let the application continue even if seeding fails
+    }
 }
 
 // Configure the HTTP request pipeline.
