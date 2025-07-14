@@ -32,14 +32,22 @@ builder.Services.AddSwaggerGen();
 
 // Add Entity Framework with PostgreSQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-// Override with environment variables if available
-var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
-var dbName = Environment.GetEnvironmentVariable(builder.Environment.IsDevelopment() ? "DEV_DB_NAME" : "DB_NAME") ?? 
-             (builder.Environment.IsDevelopment() ? "HabitChainDb_Dev" : "HabitChainDb");
-var dbUser = Environment.GetEnvironmentVariable("DB_USERNAME") ?? "postgres";
-var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "postgres";
 
-connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPassword}";
+// Override with environment variables if available
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+var dbName = Environment.GetEnvironmentVariable(builder.Environment.IsDevelopment() ? "DEV_DB_NAME" : "DB_NAME");
+var dbUser = Environment.GetEnvironmentVariable("DB_USERNAME");
+var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+
+// If environment variables are provided, construct connection string from them
+if (!string.IsNullOrEmpty(dbHost) && !string.IsNullOrEmpty(dbName) && 
+    !string.IsNullOrEmpty(dbUser) && !string.IsNullOrEmpty(dbPassword))
+{
+    var sslMode = Environment.GetEnvironmentVariable("DB_SSL_MODE") ?? "Require";
+    var trustServerCertificate = Environment.GetEnvironmentVariable("DB_TRUST_SERVER_CERTIFICATE") ?? "true";
+    
+    connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPassword};Port=5432;SSL Mode={sslMode};Trust Server Certificate={trustServerCertificate}";
+}
 
 builder.Services.AddDbContext<HabitChainDbContext>(options =>
     options.UseNpgsql(connectionString));
