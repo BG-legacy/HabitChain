@@ -8,7 +8,7 @@ This guide helps you deploy the HabitChain backend API to production, addressing
 ### 1. Database Connection Issues
 - **Problem**: Npgsql errors with Supabase connection pooling
 - **Solution**: 
-  - Disabled multiplexing for better transaction support
+  - Disabled multiplexing via connection string for better transaction supportgit 
   - Added connection resiliency with retry logic
   - Improved connection string configuration
 
@@ -22,9 +22,16 @@ This guide helps you deploy the HabitChain backend API to production, addressing
 ### 3. Transaction Issues
 - **Problem**: Multiplexing mode conflicts with database seeding
 - **Solution**:
-  - Disabled multiplexing in Entity Framework configuration
+  - Disabled multiplexing in connection string (Multiplexing=false)
   - Added retry logic for database seeding
   - Improved error handling in DbSeeder
+
+### 4. Duplicate Key Issues
+- **Problem**: Database seeding fails with duplicate key violations
+- **Solution**:
+  - Used deterministic GUIDs for all seed data
+  - Added proper duplicate key error handling
+  - Improved seeding checks and retry logic
 
 ## Deployment Options
 
@@ -40,6 +47,13 @@ docker-compose up --build
 ```bash
 cd backend
 docker-compose -f docker-compose.prod.yml up --build -d
+```
+
+#### Using the Deploy Script:
+```bash
+cd backend
+./deploy.sh        # For development
+./deploy.sh prod   # For production
 ```
 
 ### Option 2: Direct Docker Build
@@ -108,7 +122,7 @@ OPENAI_API_KEY=your_openai_api_key_here
 The application automatically constructs the connection string from environment variables:
 
 ```
-Host={DB_HOST};Database={DB_NAME};Username={DB_USERNAME};Password={DB_PASSWORD};Port={DB_PORT};SSL Mode={DB_SSL_MODE};Trust Server Certificate={DB_TRUST_SERVER_CERTIFICATE};Pooling=true;MinPoolSize=1;MaxPoolSize=20;ConnectionIdleLifetime=300;ConnectionPruningInterval=10;Timeout=30;CommandTimeout=30;InternalCommandTimeout=60
+Host={DB_HOST};Database={DB_NAME};Username={DB_USERNAME};Password={DB_PASSWORD};Port={DB_PORT};SSL Mode={DB_SSL_MODE};Trust Server Certificate={DB_TRUST_SERVER_CERTIFICATE};Pooling=true;MinPoolSize=1;MaxPoolSize=20;ConnectionIdleLifetime=300;ConnectionPruningInterval=10;Timeout=30;CommandTimeout=30;InternalCommandTimeout=60;Multiplexing=false
 ```
 
 ## Health Checks
@@ -132,6 +146,7 @@ Expected response: `"Healthy"`
 - Ensure all database environment variables are set correctly
 - Check that the Supabase connection is active
 - Verify SSL configuration is correct
+- Connection string now includes `Multiplexing=false` to prevent issues
 
 #### 2. HTTPS Certificate Errors
 **Symptoms**: `Unable to configure HTTPS endpoint. No server certificate was specified`
@@ -145,26 +160,37 @@ Expected response: `"Healthy"`
 **Symptoms**: `In multiplexing mode, transactions must be started with BeginTransaction`
 
 **Solutions**:
-- Multiplexing is now disabled in the Entity Framework configuration
+- Multiplexing is now disabled in the connection string (`Multiplexing=false`)
 - Database seeding includes retry logic
 - Improved error handling in the seeding process
 
-#### 4. Application Startup Failures
+#### 4. Duplicate Key Errors
+**Symptoms**: `duplicate key value violates unique constraint "PK_CheckIns"`
+
+**Solutions**:
+- Seeding now uses deterministic GUIDs to prevent duplicates
+- Added specific handling for duplicate key errors
+- Application continues normally if data already exists
+- Seeding is idempotent and safe to run multiple times
+
+#### 5. Application Startup Failures
 **Symptoms**: Application fails to start or crashes immediately
 
 **Solutions**:
 - Check all required environment variables are set
 - Verify database connectivity
 - Review application logs for specific error messages
+- Database seeding failures no longer prevent app startup
 
 ### Logging
 
 The application logs important events to the console:
 
 - Database connection attempts
-- Seeding progress and errors
+- Seeding progress and errors (including duplicate key handling)
 - Application startup status
 - Health check results
+- Environment information
 
 ### Monitoring
 
@@ -181,6 +207,7 @@ Monitor the application using:
 - **MaxPoolSize**: 20
 - **ConnectionIdleLifetime**: 300 seconds
 - **ConnectionPruningInterval**: 10 seconds
+- **Multiplexing**: Disabled for better transaction support
 
 ### Kestrel Configuration
 - **MaxConcurrentConnections**: 100
@@ -204,6 +231,7 @@ Monitor the application using:
 - [ ] Application logs reviewed
 - [ ] SSL/TLS configured (if required)
 - [ ] Monitoring and alerting set up
+- [ ] Database seeding completed without errors
 
 ## Support
 
@@ -214,11 +242,21 @@ If you encounter issues:
 3. Test database connectivity independently
 4. Review the troubleshooting section above
 5. Check the health endpoint for application status
+6. Use the deployment script (`./deploy.sh`) for automated deployment
 
 ## Files Modified for Deployment
 
-- `Program.cs`: Updated with better error handling and HTTPS configuration
+- `Program.cs`: Updated with better error handling, HTTPS configuration, and improved seeding
 - `Dockerfile`: Optimized for production deployment
 - `docker-compose.prod.yml`: Production-specific configuration
-- `appsettings.Production.json`: Production settings
-- `DbSeeder.cs`: Improved error handling and transaction support 
+- `appsettings.Production.json`: Production settings with multiplexing disabled
+- `DbSeeder.cs`: Improved error handling, deterministic GUIDs, and transaction support
+- `deploy.sh`: Automated deployment script with health checks
+
+## Deployment Notes
+
+- The application is now resilient to database seeding issues
+- Duplicate key errors are handled gracefully and don't prevent startup
+- All seed data uses deterministic GUIDs for consistency
+- Multiplexing is disabled to prevent transaction conflicts
+- The application will continue to start even if seeding fails 

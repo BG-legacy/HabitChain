@@ -7,6 +7,26 @@ namespace HabitChain.Infrastructure.Data;
 
 public static class DbSeeder
 {
+    // Use static GUIDs to ensure consistency across runs
+    private static readonly Guid Badge1Id = new Guid("11111111-1111-1111-1111-111111111111");
+    private static readonly Guid Badge2Id = new Guid("22222222-2222-2222-2222-222222222222");
+    private static readonly Guid Badge3Id = new Guid("33333333-3333-3333-3333-333333333333");
+    private static readonly Guid Badge4Id = new Guid("44444444-4444-4444-4444-444444444444");
+    private static readonly Guid Badge5Id = new Guid("55555555-5555-5555-5555-555555555555");
+    private static readonly Guid Badge6Id = new Guid("66666666-6666-6666-6666-666666666666");
+    private static readonly Guid Badge7Id = new Guid("77777777-7777-7777-7777-777777777777");
+    private static readonly Guid Badge8Id = new Guid("88888888-8888-8888-8888-888888888888");
+    private static readonly Guid Badge9Id = new Guid("99999999-9999-9999-9999-999999999999");
+    private static readonly Guid Badge10Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+    private static readonly Guid Badge11Id = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+
+    // Static GUIDs for habits
+    private static readonly Guid Habit1Id = new Guid("11111111-1111-1111-1111-111111111001");
+    private static readonly Guid Habit2Id = new Guid("22222222-2222-2222-2222-222222222002");
+    private static readonly Guid Habit3Id = new Guid("33333333-3333-3333-3333-333333333003");
+    private static readonly Guid Habit4Id = new Guid("44444444-4444-4444-4444-444444444004");
+    private static readonly Guid Habit5Id = new Guid("55555555-5555-5555-5555-555555555005");
+
     public static async Task SeedAsync(HabitChainDbContext context)
     {
         try
@@ -63,7 +83,7 @@ public static class DbSeeder
             // 🎯 Milestone Badges
             new Badge
             {
-                Id = Guid.NewGuid(),
+                Id = Badge1Id,
                 Name = "First Steps",
                 Description = "Create your very first habit",
                 IconUrl = "/icons/first-steps.svg",
@@ -79,7 +99,7 @@ public static class DbSeeder
             },
             new Badge
             {
-                Id = Guid.NewGuid(),
+                Id = Badge2Id,
                 Name = "Habit Collector",
                 Description = "Create 5 different habits",
                 IconUrl = "/icons/habit-collector.svg",
@@ -95,7 +115,7 @@ public static class DbSeeder
             },
             new Badge
             {
-                Id = Guid.NewGuid(),
+                Id = Badge3Id,
                 Name = "Habit Master",
                 Description = "Create 10 different habits",
                 IconUrl = "/icons/habit-master.svg",
@@ -113,7 +133,7 @@ public static class DbSeeder
             // 🔥 Streak Badges
             new Badge
             {
-                Id = Guid.NewGuid(),
+                Id = Badge4Id,
                 Name = "Week Warrior",
                 Description = "Maintain a 7-day streak",
                 IconUrl = "/icons/week-warrior.svg",
@@ -129,7 +149,7 @@ public static class DbSeeder
             },
             new Badge
             {
-                Id = Guid.NewGuid(),
+                Id = Badge5Id,
                 Name = "Month Master",
                 Description = "Maintain a 30-day streak",
                 IconUrl = "/icons/month-master.svg",
@@ -145,7 +165,7 @@ public static class DbSeeder
             },
             new Badge
             {
-                Id = Guid.NewGuid(),
+                Id = Badge6Id,
                 Name = "Century Club",
                 Description = "Maintain a 100-day streak",
                 IconUrl = "/icons/century-club.svg",
@@ -163,7 +183,7 @@ public static class DbSeeder
             // 📊 Total Badges
             new Badge
             {
-                Id = Guid.NewGuid(),
+                Id = Badge7Id,
                 Name = "Getting Started",
                 Description = "Complete 10 total check-ins",
                 IconUrl = "/icons/getting-started.svg",
@@ -179,7 +199,7 @@ public static class DbSeeder
             },
             new Badge
             {
-                Id = Guid.NewGuid(),
+                Id = Badge8Id,
                 Name = "Habit Builder",
                 Description = "Complete 50 total check-ins",
                 IconUrl = "/icons/habit-builder.svg",
@@ -195,7 +215,7 @@ public static class DbSeeder
             },
             new Badge
             {
-                Id = Guid.NewGuid(),
+                Id = Badge9Id,
                 Name = "Dedication Master",
                 Description = "Complete 500 total check-ins",
                 IconUrl = "/icons/dedication-master.svg",
@@ -211,7 +231,7 @@ public static class DbSeeder
             },
             new Badge
             {
-                Id = Guid.NewGuid(),
+                Id = Badge10Id,
                 Name = "Legend",
                 Description = "Complete 1000 total check-ins",
                 IconUrl = "/icons/legend.svg",
@@ -229,7 +249,7 @@ public static class DbSeeder
             // ⏰ Time-based Badges
             new Badge
             {
-                Id = Guid.NewGuid(),
+                Id = Badge11Id,
                 Name = "Early Bird",
                 Description = "Complete 10 check-ins before 8 AM",
                 IconUrl = "/icons/early-bird.svg",
@@ -305,7 +325,7 @@ public static class DbSeeder
             // John's habits
             new Habit
             {
-                Id = Guid.NewGuid(),
+                Id = Habit1Id,
                 UserId = "test-user-1",
                 Name = "Morning Exercise",
                 Description = "30 minutes of cardio and strength training",
@@ -320,7 +340,7 @@ public static class DbSeeder
             },
             new Habit
             {
-                Id = Guid.NewGuid(),
+                Id = Habit2Id,
                 UserId = "test-user-1",
                 Name = "Read 30 Minutes",
                 Description = "Read a book for 30 minutes before bed",
@@ -337,7 +357,7 @@ public static class DbSeeder
             // Jane's habits
             new Habit
             {
-                Id = Guid.NewGuid(),
+                Id = Habit3Id,
                 UserId = "test-user-2",
                 Name = "Meditation",
                 Description = "10 minutes of mindfulness meditation",
@@ -352,7 +372,7 @@ public static class DbSeeder
             },
             new Habit
             {
-                Id = Guid.NewGuid(),
+                Id = Habit4Id,
                 UserId = "test-user-2",
                 Name = "Drink Water",
                 Description = "Drink 8 glasses of water daily",
@@ -369,7 +389,7 @@ public static class DbSeeder
             // Mike's habits
             new Habit
             {
-                Id = Guid.NewGuid(),
+                Id = Habit5Id,
                 UserId = "test-user-3",
                 Name = "Write Journal",
                 Description = "Write in journal for 15 minutes",
@@ -391,29 +411,90 @@ public static class DbSeeder
     private static async Task SeedTestCheckInsAsync(HabitChainDbContext context)
     {
         var testCheckIns = new List<CheckIn>();
-        var habits = await context.Habits.ToListAsync();
+        
+        // Use deterministic IDs for check-ins to avoid duplicates
+        var checkInIdCounter = 1;
 
-        foreach (var habit in habits)
+        // Create check-ins for Habit1 (Morning Exercise - 5 day streak)
+        for (int i = 0; i < 5; i++)
         {
-            // Generate some check-ins for the past week
-            for (int i = 0; i < 7; i++)
+            var checkInDate = DateTime.UtcNow.AddDays(-i);
+            testCheckIns.Add(new CheckIn
             {
-                var checkInDate = DateTime.UtcNow.AddDays(-i);
-                if (i < habit.CurrentStreak) // Only create check-ins for the current streak
-                {
-                    testCheckIns.Add(new CheckIn
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = habit.UserId,
-                        HabitId = habit.Id,
-                        CompletedAt = checkInDate,
-                        StreakDay = habit.CurrentStreak - i,
-                        CreatedAt = checkInDate,
-                        UpdatedAt = checkInDate
-                    });
-                }
-            }
+                Id = new Guid($"10000000-0000-0000-0000-{checkInIdCounter:D12}"),
+                UserId = "test-user-1",
+                HabitId = Habit1Id,
+                CompletedAt = checkInDate,
+                StreakDay = 5 - i,
+                CreatedAt = checkInDate,
+                UpdatedAt = checkInDate
+            });
+            checkInIdCounter++;
         }
+
+        // Create check-ins for Habit2 (Read 30 Minutes - 3 day streak)
+        for (int i = 0; i < 3; i++)
+        {
+            var checkInDate = DateTime.UtcNow.AddDays(-i);
+            testCheckIns.Add(new CheckIn
+            {
+                Id = new Guid($"10000000-0000-0000-0000-{checkInIdCounter:D12}"),
+                UserId = "test-user-1",
+                HabitId = Habit2Id,
+                CompletedAt = checkInDate,
+                StreakDay = 3 - i,
+                CreatedAt = checkInDate,
+                UpdatedAt = checkInDate
+            });
+            checkInIdCounter++;
+        }
+
+        // Create check-ins for Habit3 (Meditation - 7 day streak)
+        for (int i = 0; i < 7; i++)
+        {
+            var checkInDate = DateTime.UtcNow.AddDays(-i);
+            testCheckIns.Add(new CheckIn
+            {
+                Id = new Guid($"10000000-0000-0000-0000-{checkInIdCounter:D12}"),
+                UserId = "test-user-2",
+                HabitId = Habit3Id,
+                CompletedAt = checkInDate,
+                StreakDay = 7 - i,
+                CreatedAt = checkInDate,
+                UpdatedAt = checkInDate
+            });
+            checkInIdCounter++;
+        }
+
+        // Create check-ins for Habit4 (Drink Water - 2 day streak)
+        for (int i = 0; i < 2; i++)
+        {
+            var checkInDate = DateTime.UtcNow.AddDays(-i);
+            testCheckIns.Add(new CheckIn
+            {
+                Id = new Guid($"10000000-0000-0000-0000-{checkInIdCounter:D12}"),
+                UserId = "test-user-2",
+                HabitId = Habit4Id,
+                CompletedAt = checkInDate,
+                StreakDay = 2 - i,
+                CreatedAt = checkInDate,
+                UpdatedAt = checkInDate
+            });
+            checkInIdCounter++;
+        }
+
+        // Create check-ins for Habit5 (Write Journal - 1 day streak)
+        var journalCheckInDate = DateTime.UtcNow;
+        testCheckIns.Add(new CheckIn
+        {
+            Id = new Guid($"10000000-0000-0000-0000-{checkInIdCounter:D12}"),
+            UserId = "test-user-3",
+            HabitId = Habit5Id,
+            CompletedAt = journalCheckInDate,
+            StreakDay = 1,
+            CreatedAt = journalCheckInDate,
+            UpdatedAt = journalCheckInDate
+        });
 
         await context.CheckIns.AddRangeAsync(testCheckIns);
         await context.SaveChangesAsync();
@@ -425,10 +506,10 @@ public static class DbSeeder
         {
             new Encouragement
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("20000000-0000-0000-0000-000000000001"),
                 FromUserId = "test-user-1",
                 ToUserId = "test-user-2",
-                HabitId = context.Habits.First(h => h.UserId == "test-user-2").Id,
+                HabitId = Habit3Id, // Meditation habit
                 Message = "Great job with your meditation habit! Keep it up!",
                 Type = EncouragementType.Support,
                 IsRead = false,
@@ -437,10 +518,10 @@ public static class DbSeeder
             },
             new Encouragement
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("20000000-0000-0000-0000-000000000002"),
                 FromUserId = "test-user-2",
                 ToUserId = "test-user-1",
-                HabitId = context.Habits.First(h => h.UserId == "test-user-1").Id,
+                HabitId = Habit1Id, // Morning Exercise habit
                 Message = "Your exercise routine is inspiring! You're doing amazing!",
                 Type = EncouragementType.Motivation,
                 IsRead = true,

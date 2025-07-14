@@ -170,39 +170,71 @@ using (var scope = app.Services.CreateScope())
         var context = scope.ServiceProvider.GetRequiredService<HabitChainDbContext>();
         Console.WriteLine("Attempting to seed database...");
         
-        // Ensure database is created and migrations are applied
-        await context.Database.EnsureCreatedAsync();
-        
-        // Seed data with retry logic
-        var maxRetries = 3;
-        var retryCount = 0;
-        
-        while (retryCount < maxRetries)
+        // Check if we can connect to the database
+        var canConnect = await context.Database.CanConnectAsync();
+        if (!canConnect)
         {
-            try
+            Console.WriteLine("Cannot connect to database. Skipping seeding.");
+        }
+        else
+        {
+            // Ensure database is created and migrations are applied
+            await context.Database.EnsureCreatedAsync();
+            
+            // In production, check if this is a fresh database
+            var isProduction = app.Environment.IsProduction();
+            var hasTables = await context.Database.GetAppliedMigrationsAsync();
+            
+            Console.WriteLine($"Environment: {(isProduction ? "Production" : "Development")}");
+            Console.WriteLine($"Applied migrations: {hasTables.Count()}");
+            
+            // Seed data with retry logic
+            var maxRetries = 3;
+            var retryCount = 0;
+            
+            while (retryCount < maxRetries)
             {
-                await DbSeeder.SeedAsync(context);
-                Console.WriteLine("Database seeding completed successfully.");
-                break;
-            }
-            catch (Exception ex)
-            {
-                retryCount++;
-                Console.WriteLine($"Database seeding attempt {retryCount} failed: {ex.Message}");
-                
-                if (retryCount >= maxRetries)
+                try
                 {
-                    Console.WriteLine($"Database seeding failed after {maxRetries} attempts. Continuing without seeding.");
-                    Console.WriteLine($"Exception type: {ex.GetType().Name}");
-                    if (ex.InnerException != null)
+                    await DbSeeder.SeedAsync(context);
+                    Console.WriteLine("Database seeding completed successfully.");
+                    break;
+                }
+                catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx) when (dbEx.InnerException?.Message?.Contains("duplicate key") == true)
+                {
+                    retryCount++;
+                    Console.WriteLine($"Database seeding attempt {retryCount} failed due to duplicate key. This is normal if data already exists.");
+                    
+                    if (retryCount >= maxRetries)
                     {
-                        Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                        Console.WriteLine($"Database seeding skipped after {maxRetries} attempts due to existing data.");
+                        break; // Don't treat this as an error
+                    }
+                    else
+                    {
+                        // Wait before retrying
+                        await Task.Delay(TimeSpan.FromSeconds(2));
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // Wait before retrying
-                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    retryCount++;
+                    Console.WriteLine($"Database seeding attempt {retryCount} failed: {ex.Message}");
+                    
+                    if (retryCount >= maxRetries)
+                    {
+                        Console.WriteLine($"Database seeding failed after {maxRetries} attempts. Continuing without seeding.");
+                        Console.WriteLine($"Exception type: {ex.GetType().Name}");
+                        if (ex.InnerException != null)
+                        {
+                            Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                        }
+                    }
+                    else
+                    {
+                        // Wait before retrying
+                        await Task.Delay(TimeSpan.FromSeconds(5));
+                    }
                 }
             }
         }
