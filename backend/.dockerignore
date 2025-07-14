@@ -1,0 +1,55 @@
+# .dockerignore file for HabitChain backend
+
+# Ignore build output directories
+**/bin/
+**/obj/
+**/out/
+**/TestResults/
+
+# Ignore NuGet packages
+**/packages/
+**/*.nupkg
+
+# Ignore IDE files
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.swp
+**/*.swo
+**/*~
+
+# Ignore OS files
+**/.DS_Store
+**/Thumbs.db
+**/*.log
+
+# Ignore temporary files
+**/tmp/
+**/temp/
+
+# Ignore source control
+**/.git/
+**/.gitignore
+**/.gitattributes
+
+# Ignore environment files (will be mounted or passed as env vars)
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+
+# Ignore documentation
+**/*.md
+!README.md
+
+# Ignore test files
+**/HabitChain.Tests/
+**/*Tests/
+**/*.Tests/
+**/*Test/
+**/*.Test/
+
+# Ignore Docker files to avoid infinite recursion
+**/Dockerfile*
+**/docker-compose*
+**/.dockerignore 

@@ -1,0 +1,91 @@
+services:
+  # Production PostgreSQL Database
+  habitchain-db:
+    image: postgres:15-alpine
+    container_name: habitchain-db-prod
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-HabitChainDb}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - habitchain_db_prod_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    networks:
+      - habitchain-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    # Don't expose database port in production
+    # ports:
+    #   - "5432:5432"
+
+  # HabitChain Backend API - Production
+  habitchain-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: habitchain-backend-prod
+    restart: always
+    depends_on:
+      habitchain-db:
+        condition: service_healthy
+    environment:
+      # Database Configuration
+      DB_HOST: habitchain-db
+      DB_NAME: ${DB_NAME:-HabitChainDb}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: 5432
+      DB_SSL_MODE: ${DB_SSL_MODE:-Prefer}
+      
+      # JWT Configuration
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ISSUER: ${JWT_ISSUER:-HabitChainAPI}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-HabitChainClient}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-60}
+      
+      # OpenAI Configuration
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OPENAI_MAX_TOKENS: ${OPENAI_MAX_TOKENS:-1000}
+      OPENAI_TEMPERATURE: ${OPENAI_TEMPERATURE:-0.7}
+      
+      # ASP.NET Core Configuration
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount logs directory for production logging
+      - ./logs:/app/logs
+      # Mount appsettings for production overrides
+      - ./appsettings.Production.json:/app/appsettings.Production.json:ro
+    networks:
+      - habitchain-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+networks:
+  habitchain-network:
+    driver: bridge
+
+volumes:
+  habitchain_db_prod_data:
+    driver: local 

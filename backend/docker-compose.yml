@@ -1,0 +1,78 @@
+services:
+  # PostgreSQL Database
+  habitchain-db:
+    image: postgres:15-alpine
+    container_name: habitchain-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: HabitChainDb_Dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - habitchain_db_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - habitchain-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # HabitChain Backend API
+  habitchain-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: habitchain-backend
+    restart: unless-stopped
+    depends_on:
+      habitchain-db:
+        condition: service_healthy
+    environment:
+      # Database Configuration
+      DB_HOST: habitchain-db
+      DB_NAME: HabitChainDb_Dev
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_PORT: 5432
+      DB_SSL_MODE: Disable
+      
+      # JWT Configuration
+      JWT_SECRET_KEY: YourSuperSecretKeyThatIsAtLeast32CharactersLong!
+      JWT_ISSUER: HabitChainAPI
+      JWT_AUDIENCE: HabitChainClient
+      JWT_EXPIRE_MINUTES: 60
+      
+      # OpenAI Configuration (optional - set your own key)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: gpt-4o-mini
+      OPENAI_MAX_TOKENS: 1000
+      OPENAI_TEMPERATURE: 0.7
+      
+      # ASP.NET Core Configuration
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "8081:8080"
+    volumes:
+      # Mount logs directory for debugging
+      - ./logs:/app/logs
+    networks:
+      - habitchain-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  habitchain-network:
+    driver: bridge
+
+volumes:
+  habitchain_db_data:
+    driver: local 
