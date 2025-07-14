@@ -48,7 +48,8 @@ if (!string.IsNullOrEmpty(dbHost) && !string.IsNullOrEmpty(dbName) &&
     var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "6543";
     
     // Use the pooler username format for Supabase
-    connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPassword};Port={port};SSL Mode={sslMode};Trust Server Certificate={trustServerCertificate};Pooling=true;MinPoolSize=1;MaxPoolSize=20;ConnectionIdleLifetime=300;ConnectionPruningInterval=10;Timeout=30;CommandTimeout=30;InternalCommandTimeout=60";
+    // Disable multiplexing in connection string for better transaction support
+    connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPassword};Port={port};SSL Mode={sslMode};Trust Server Certificate={trustServerCertificate};Pooling=true;MinPoolSize=1;MaxPoolSize=20;ConnectionIdleLifetime=300;ConnectionPruningInterval=10;Timeout=30;CommandTimeout=30;InternalCommandTimeout=60;Multiplexing=false";
 }
 
 builder.Services.AddDbContext<HabitChainDbContext>(options =>
@@ -59,10 +60,7 @@ builder.Services.AddDbContext<HabitChainDbContext>(options =>
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorCodesToAdd: null);
         
-        // Disable multiplexing for better transaction support
-        npgsqlOptions.DisableMultiplexing();
-        
-        // Add connection resiliency
+        // Add additional connection resiliency
         npgsqlOptions.EnableRetryOnFailure(
             maxRetryCount: 3,
             maxRetryDelay: TimeSpan.FromSeconds(5),
