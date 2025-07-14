@@ -20,6 +20,15 @@ Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel to only use HTTP (no HTTPS) in production
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(8080); // Only HTTP on port 8080
+});
+
+// Override any HTTPS URLs from configuration
+builder.WebHost.UseUrls("http://+:8080");
+
 // Add environment variables to configuration
 builder.Configuration.AddEnvironmentVariables();
 
@@ -262,19 +271,8 @@ if (app.Environment.IsDevelopment())
     mapper.ConfigurationProvider.AssertConfigurationIsValid();
 }
 
-// Configure HTTPS redirection only if we have a valid certificate
-if (!app.Environment.IsDevelopment())
-{
-    // Only use HTTPS redirection if we have a valid certificate
-    try
-    {
-        app.UseHttpsRedirection();
-    }
-    catch (InvalidOperationException)
-    {
-        Console.WriteLine("HTTPS redirection disabled - no valid certificate found");
-    }
-}
+// DO NOT USE HTTPS REDIRECTION - HTTP only in production
+Console.WriteLine("Application configured for HTTP only (no HTTPS redirection)");
 
 app.UseCors("AllowAll");
 
@@ -289,4 +287,5 @@ app.MapControllers();
 // Add a simple health check endpoint
 app.MapGet("/health", () => "Healthy");
 
+Console.WriteLine("Starting application on http://+:8080");
 app.Run();
