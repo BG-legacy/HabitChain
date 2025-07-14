@@ -258,3 +258,4 @@ app.MapGet("/health", () => "Healthy");
 
 Console.WriteLine("Starting application on http://+:8080");
 app.Run();
+ 

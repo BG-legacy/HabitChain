@@ -59,7 +59,7 @@ The application will open at [http://localhost:3000](http://localhost:3000).
 ## Testing the Forms
 
 ### Backend Setup
-1. Ensure the backend is running on `https://localhost:7115`
+1. Ensure the backend is running on `https://habitchain.onrender.com`
 2. The database should be seeded with test data
 
 ### Test Scenarios
@@ -125,7 +125,7 @@ The authentication forms use a modern, responsive design with:
 Create a `.env` file in the root directory:
 
 ```env
-REACT_APP_API_URL=https://localhost:7115/api
+REACT_APP_API_URL=https://habitchain.onrender.com/api
 ```
 
 ## Troubleshooting

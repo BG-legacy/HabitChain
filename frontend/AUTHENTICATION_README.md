@@ -199,7 +199,7 @@ await logout();
 
 **API Configuration:**
 ```env
-REACT_APP_API_URL=https://localhost:7115/api
+REACT_APP_API_URL=https://habitchain.onrender.com/api
 ```
 
 ### JWT Settings

@@ -1,7 +1,7 @@
 // Environment Configuration
 export const config = {
   // API Configuration
-  apiUrl: process.env.REACT_APP_API_URL || 'http://localhost:5063/api',
+  apiUrl: process.env.REACT_APP_API_URL || 'https://habitchain.onrender.com/api',
   
   // Environment
   environment: process.env.REACT_APP_ENV || 'development',
@@ -32,9 +32,9 @@ export const isLocalhost = (): boolean => {
 };
 
 export const getApiUrl = (): string => {
-  // In development, if running on localhost, use the local API
+  // In development, if running on localhost, use the local API for development
   if (isLocalhost() && config.isDevelopment) {
-    return 'http://localhost:5063/api';
+    return 'https://habitchain.onrender.com/api';
   }
   
   return config.apiUrl;

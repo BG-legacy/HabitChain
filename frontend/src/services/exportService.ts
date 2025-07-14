@@ -1,4 +1,5 @@
 import { ApiService } from './api';
+import { getApiUrl } from '../config/environment';
 
 interface ExportData {
   habits: any[];
@@ -118,7 +119,7 @@ class ExportService {
       const exportOptions = this.convertToBackendOptions(options);
       
       // Make request to backend export endpoint
-      const response = await fetch('http://localhost:5063/api/export/csv', {
+      const response = await fetch(`${getApiUrl()}/export/csv`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -156,7 +157,7 @@ class ExportService {
       const exportOptions = this.convertToBackendOptions(options);
       
       // Make request to backend export endpoint
-      const response = await fetch('http://localhost:5063/api/export/pdf', {
+      const response = await fetch(`${getApiUrl()}/export/pdf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
