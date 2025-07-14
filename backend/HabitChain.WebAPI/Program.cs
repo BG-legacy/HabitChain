@@ -197,54 +197,23 @@ using (var scope = app.Services.CreateScope())
             Console.WriteLine($"Environment: {(isProduction ? "Production" : "Development")}");
             Console.WriteLine($"Applied migrations: {hasTables.Count()}");
             
-            // Seed data with retry logic
-            var maxRetries = 3;
-            var retryCount = 0;
-            
-            while (retryCount < maxRetries)
+            // Seed database with proper transaction handling
+            try
             {
-                try
+                Console.WriteLine("Attempting to seed database...");
+                await DbSeeder.SeedAsync(context);
+                Console.WriteLine("Database initialization completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Database seeding failed: {ex.Message}");
+                Console.WriteLine($"Exception type: {ex.GetType().Name}");
+                if (ex.InnerException != null)
                 {
-                    await DbSeeder.SeedAsync(context);
-                    Console.WriteLine("Database seeding completed successfully.");
-                    break;
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
                 }
-                catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx) when (dbEx.InnerException?.Message?.Contains("duplicate key") == true)
-                {
-                    retryCount++;
-                    Console.WriteLine($"Database seeding attempt {retryCount} failed due to duplicate key. This is normal if data already exists.");
-                    
-                    if (retryCount >= maxRetries)
-                    {
-                        Console.WriteLine($"Database seeding skipped after {maxRetries} attempts due to existing data.");
-                        break; // Don't treat this as an error
-                    }
-                    else
-                    {
-                        // Wait before retrying
-                        await Task.Delay(TimeSpan.FromSeconds(2));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    retryCount++;
-                    Console.WriteLine($"Database seeding attempt {retryCount} failed: {ex.Message}");
-                    
-                    if (retryCount >= maxRetries)
-                    {
-                        Console.WriteLine($"Database seeding failed after {maxRetries} attempts. Continuing without seeding.");
-                        Console.WriteLine($"Exception type: {ex.GetType().Name}");
-                        if (ex.InnerException != null)
-                        {
-                            Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-                        }
-                    }
-                    else
-                    {
-                        // Wait before retrying
-                        await Task.Delay(TimeSpan.FromSeconds(5));
-                    }
-                }
+                // Continue running the application even if seeding fails
+                Console.WriteLine("Application will continue without seed data.");
             }
         }
     }

@@ -2,6 +2,7 @@ using HabitChain.Domain.Entities;
 using HabitChain.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace HabitChain.Infrastructure.Data;
 
@@ -29,55 +30,93 @@ public static class DbSeeder
 
     public static async Task SeedAsync(HabitChainDbContext context)
     {
+        IDbContextTransaction? transaction = null;
+        
         try
         {
             // Ensure database is created
             await context.Database.EnsureCreatedAsync();
-
-            // Seed Badges if they don't exist
-            if (!await context.Badges.AnyAsync())
+            
+            // Check if data already exists
+            var hasData = await context.Badges.AnyAsync() || 
+                         await context.Users.AnyAsync() || 
+                         await context.Habits.AnyAsync() || 
+                         await context.CheckIns.AnyAsync() || 
+                         await context.Encouragements.AnyAsync();
+                         
+            if (hasData)
             {
-                await SeedBadgesAsync(context);
+                Console.WriteLine("Database already contains data. Skipping seeding.");
+                return;
             }
 
-            // Seed test users if they don't exist
-            if (!await context.Users.AnyAsync())
-            {
-                await SeedTestUsersAsync(context);
-            }
+            // Start transaction
+            transaction = await context.Database.BeginTransactionAsync();
+            Console.WriteLine("Starting database seeding transaction...");
 
-            // Seed test habits if they don't exist
-            if (!await context.Habits.AnyAsync())
-            {
-                await SeedTestHabitsAsync(context);
-            }
+            // Seed all data in one transaction
+            await SeedBadgesAsync(context);
+            Console.WriteLine("Badges seeded successfully.");
+            
+            await SeedTestUsersAsync(context);
+            Console.WriteLine("Test users seeded successfully.");
+            
+            await SeedTestHabitsAsync(context);
+            Console.WriteLine("Test habits seeded successfully.");
+            
+            await SeedTestCheckInsAsync(context);
+            Console.WriteLine("Test check-ins seeded successfully.");
+            
+            await SeedTestEncouragementsAsync(context);
+            Console.WriteLine("Test encouragements seeded successfully.");
 
-            // Seed test check-ins if they don't exist
-            if (!await context.CheckIns.AnyAsync())
-            {
-                await SeedTestCheckInsAsync(context);
-            }
-
-            // Seed test encouragements if they don't exist
-            if (!await context.Encouragements.AnyAsync())
-            {
-                await SeedTestEncouragementsAsync(context);
-            }
+            // Save all changes in one transaction
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            
+            Console.WriteLine("Database seeding transaction committed successfully.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error during database seeding: {ex.Message}");
             Console.WriteLine($"Exception type: {ex.GetType().Name}");
+            
             if (ex.InnerException != null)
             {
                 Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
             }
+
+            // Rollback transaction if it exists
+            if (transaction != null)
+            {
+                try
+                {
+                    await transaction.RollbackAsync();
+                    Console.WriteLine("Database seeding transaction rolled back.");
+                }
+                catch (Exception rollbackEx)
+                {
+                    Console.WriteLine($"Error rolling back transaction: {rollbackEx.Message}");
+                }
+            }
+            
             throw; // Re-throw to let the calling code handle it
+        }
+        finally
+        {
+            transaction?.Dispose();
         }
     }
 
     private static async Task SeedBadgesAsync(HabitChainDbContext context)
     {
+        // Check if badges already exist
+        if (await context.Badges.AnyAsync())
+        {
+            Console.WriteLine("Badges already exist, skipping badge seeding.");
+            return;
+        }
+
         var badges = new List<Badge>
         {
             // 🎯 Milestone Badges
@@ -266,11 +305,17 @@ public static class DbSeeder
         };
 
         await context.Badges.AddRangeAsync(badges);
-        await context.SaveChangesAsync();
     }
 
     private static async Task SeedTestUsersAsync(HabitChainDbContext context)
     {
+        // Check if users already exist
+        if (await context.Users.AnyAsync())
+        {
+            Console.WriteLine("Users already exist, skipping user seeding.");
+            return;
+        }
+
         var testUsers = new List<User>
         {
             new User
@@ -315,11 +360,17 @@ public static class DbSeeder
         };
 
         await context.Users.AddRangeAsync(testUsers);
-        await context.SaveChangesAsync();
     }
 
     private static async Task SeedTestHabitsAsync(HabitChainDbContext context)
     {
+        // Check if habits already exist
+        if (await context.Habits.AnyAsync())
+        {
+            Console.WriteLine("Habits already exist, skipping habit seeding.");
+            return;
+        }
+
         var testHabits = new List<Habit>
         {
             // John's habits
@@ -405,11 +456,17 @@ public static class DbSeeder
         };
 
         await context.Habits.AddRangeAsync(testHabits);
-        await context.SaveChangesAsync();
     }
 
     private static async Task SeedTestCheckInsAsync(HabitChainDbContext context)
     {
+        // Check if check-ins already exist
+        if (await context.CheckIns.AnyAsync())
+        {
+            Console.WriteLine("Check-ins already exist, skipping check-in seeding.");
+            return;
+        }
+
         var testCheckIns = new List<CheckIn>();
         
         // Use deterministic IDs for check-ins to avoid duplicates
@@ -497,11 +554,17 @@ public static class DbSeeder
         });
 
         await context.CheckIns.AddRangeAsync(testCheckIns);
-        await context.SaveChangesAsync();
     }
 
     private static async Task SeedTestEncouragementsAsync(HabitChainDbContext context)
     {
+        // Check if encouragements already exist
+        if (await context.Encouragements.AnyAsync())
+        {
+            Console.WriteLine("Encouragements already exist, skipping encouragement seeding.");
+            return;
+        }
+
         var encouragements = new List<Encouragement>
         {
             new Encouragement
@@ -531,7 +594,6 @@ public static class DbSeeder
         };
 
         await context.Encouragements.AddRangeAsync(encouragements);
-        await context.SaveChangesAsync();
     }
 
     private static string GetRandomEncouragementMessage()
