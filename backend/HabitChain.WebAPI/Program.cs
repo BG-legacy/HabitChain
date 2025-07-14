@@ -45,9 +45,9 @@ if (!string.IsNullOrEmpty(dbHost) && !string.IsNullOrEmpty(dbName) &&
 {
     var sslMode = Environment.GetEnvironmentVariable("DB_SSL_MODE") ?? "Require";
     var trustServerCertificate = Environment.GetEnvironmentVariable("DB_TRUST_SERVER_CERTIFICATE") ?? "true";
-    var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+    var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "6543";
     
-    // Add additional parameters to handle IPv6 issues and improve connection stability
+    // Use the pooler username format for Supabase
     connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPassword};Port={port};SSL Mode={sslMode};Trust Server Certificate={trustServerCertificate};Pooling=true;MinPoolSize=1;MaxPoolSize=20;ConnectionIdleLifetime=300;ConnectionPruningInterval=10;Timeout=30;CommandTimeout=30;InternalCommandTimeout=60";
 }
 

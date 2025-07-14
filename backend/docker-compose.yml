@@ -33,12 +33,12 @@ services:
         condition: service_healthy
     environment:
       # Database Configuration
-      DB_HOST: habitchain-db
-      DB_NAME: HabitChainDb_Dev
-      DB_USERNAME: postgres
+      DB_HOST: aws-0-us-east-2.pooler.supabase.com
+      DB_NAME: postgres
+      DB_USERNAME: postgres.ekmnikbqyhgiomqkgcet
       DB_PASSWORD: postgres
-      DB_PORT: 5432
-      DB_SSL_MODE: Disable
+      DB_PORT: 6543
+      DB_SSL_MODE: Require
       
       # JWT Configuration
       JWT_SECRET_KEY: YourSuperSecretKeyThatIsAtLeast32CharactersLong!
