@@ -49,9 +49,14 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
-# Set environment variables
+# Set environment variables for production
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_Kestrel__Limits__MaxConcurrentConnections=100
+ENV ASPNETCORE_Kestrel__Limits__MaxConcurrentUpgradedConnections=100
+ENV ASPNETCORE_Kestrel__Limits__MaxRequestBodySize=52428800
+ENV ASPNETCORE_Kestrel__Limits__RequestHeadersTimeout=00:00:30
+ENV ASPNETCORE_Kestrel__Limits__KeepAliveTimeout=00:00:02
 
 # Run the application
 ENTRYPOINT ["dotnet", "HabitChain.WebAPI.dll"] 

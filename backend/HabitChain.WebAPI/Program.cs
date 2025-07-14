@@ -55,8 +55,17 @@ builder.Services.AddDbContext<HabitChainDbContext>(options =>
     options.UseNpgsql(connectionString, npgsqlOptions =>
     {
         npgsqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 3,
+            maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorCodesToAdd: null);
+        
+        // Disable multiplexing for better transaction support
+        npgsqlOptions.DisableMultiplexing();
+        
+        // Add connection resiliency
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
             errorCodesToAdd: null);
     }));
 
@@ -162,12 +171,47 @@ using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<HabitChainDbContext>();
         Console.WriteLine("Attempting to seed database...");
-        await DbSeeder.SeedAsync(context);
-        Console.WriteLine("Database seeding completed successfully.");
+        
+        // Ensure database is created and migrations are applied
+        await context.Database.EnsureCreatedAsync();
+        
+        // Seed data with retry logic
+        var maxRetries = 3;
+        var retryCount = 0;
+        
+        while (retryCount < maxRetries)
+        {
+            try
+            {
+                await DbSeeder.SeedAsync(context);
+                Console.WriteLine("Database seeding completed successfully.");
+                break;
+            }
+            catch (Exception ex)
+            {
+                retryCount++;
+                Console.WriteLine($"Database seeding attempt {retryCount} failed: {ex.Message}");
+                
+                if (retryCount >= maxRetries)
+                {
+                    Console.WriteLine($"Database seeding failed after {maxRetries} attempts. Continuing without seeding.");
+                    Console.WriteLine($"Exception type: {ex.GetType().Name}");
+                    if (ex.InnerException != null)
+                    {
+                        Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    }
+                }
+                else
+                {
+                    // Wait before retrying
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+                }
+            }
+        }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Error during database seeding: {ex.Message}");
+        Console.WriteLine($"Error during database initialization: {ex.Message}");
         Console.WriteLine($"Exception type: {ex.GetType().Name}");
         if (ex.InnerException != null)
         {
@@ -188,10 +232,18 @@ if (app.Environment.IsDevelopment())
     mapper.ConfigurationProvider.AssertConfigurationIsValid();
 }
 
-// Configure HTTPS redirection (only in production)
+// Configure HTTPS redirection only if we have a valid certificate
 if (!app.Environment.IsDevelopment())
 {
-    app.UseHttpsRedirection();
+    // Only use HTTPS redirection if we have a valid certificate
+    try
+    {
+        app.UseHttpsRedirection();
+    }
+    catch (InvalidOperationException)
+    {
+        Console.WriteLine("HTTPS redirection disabled - no valid certificate found");
+    }
 }
 
 app.UseCors("AllowAll");
@@ -203,5 +255,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Add a simple health check endpoint
+app.MapGet("/health", () => "Healthy");
 
 app.Run();

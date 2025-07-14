@@ -39,6 +39,7 @@ services:
       DB_PASSWORD: postgres
       DB_PORT: 6543
       DB_SSL_MODE: Require
+      DB_TRUST_SERVER_CERTIFICATE: true
       
       # JWT Configuration
       JWT_SECRET_KEY: YourSuperSecretKeyThatIsAtLeast32CharactersLong!
@@ -53,8 +54,15 @@ services:
       OPENAI_TEMPERATURE: 0.7
       
       # ASP.NET Core Configuration
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
+      
+      # Database connection resiliency
+      DB_CONNECTION_TIMEOUT: 30
+      DB_COMMAND_TIMEOUT: 30
+      DB_POOLING: true
+      DB_MIN_POOL_SIZE: 1
+      DB_MAX_POOL_SIZE: 20
     ports:
       - "8081:8080"
     volumes:
