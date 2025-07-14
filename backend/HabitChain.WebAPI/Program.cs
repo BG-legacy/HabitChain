@@ -253,9 +253,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Add a simple health check endpoint
-app.MapGet("/health", () => "Healthy");
-
 Console.WriteLine("Starting application on http://+:8080");
 app.Run();
- 

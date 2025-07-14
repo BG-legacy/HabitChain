@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HabitChain.WebAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4161355ac268193626436cf4f102a2bdbb66b32a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a84cede2a92e118f93b9992093ae9e823f8f7387")]
 [assembly: System.Reflection.AssemblyProductAttribute("HabitChain.WebAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HabitChain.WebAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
