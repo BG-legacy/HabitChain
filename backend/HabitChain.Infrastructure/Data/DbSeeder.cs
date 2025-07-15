@@ -108,7 +108,7 @@ public static class DbSeeder
         }
     }
 
-    private static async Task SeedBadgesAsync(HabitChainDbContext context)
+    public static async Task SeedBadgesAsync(HabitChainDbContext context)
     {
         // Check if badges already exist
         if (await context.Badges.AnyAsync())

@@ -179,61 +179,65 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Seed the database
-using (var scope = app.Services.CreateScope())
+// Seed the database (optimized for production performance)
+if (!app.Environment.IsProduction())
 {
-    try
+    // Development mode: Full seeding for testing
+    using (var scope = app.Services.CreateScope())
     {
-        var context = scope.ServiceProvider.GetRequiredService<HabitChainDbContext>();
-        Console.WriteLine("Attempting to seed database...");
-        
-        // Check if we can connect to the database
-        var canConnect = await context.Database.CanConnectAsync();
-        if (!canConnect)
+        try
         {
-            Console.WriteLine("Cannot connect to database. Skipping seeding.");
-        }
-        else
-        {
-            // Ensure database is created and migrations are applied
-            await context.Database.EnsureCreatedAsync();
+            var context = scope.ServiceProvider.GetRequiredService<HabitChainDbContext>();
+            Console.WriteLine("Development mode: Checking database seeding...");
             
-            // In production, check if this is a fresh database
-            var isProduction = app.Environment.IsProduction();
-            var hasTables = await context.Database.GetAppliedMigrationsAsync();
-            
-            Console.WriteLine($"Environment: {(isProduction ? "Production" : "Development")}");
-            Console.WriteLine($"Applied migrations: {hasTables.Count()}");
-            
-            // Seed database with proper transaction handling
-            try
+            // Quick check - only seed if no users exist (faster than checking all tables)
+            var hasUsers = await context.Users.AnyAsync();
+            if (!hasUsers)
             {
-                Console.WriteLine("Attempting to seed database...");
+                Console.WriteLine("No users found. Seeding database...");
                 await DbSeeder.SeedAsync(context);
-                Console.WriteLine("Database initialization completed successfully.");
+                Console.WriteLine("Database seeding completed successfully.");
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"Database seeding failed: {ex.Message}");
-                Console.WriteLine($"Exception type: {ex.GetType().Name}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-                }
-                // Continue running the application even if seeding fails
-                Console.WriteLine("Application will continue without seed data.");
+                Console.WriteLine("Database already contains users. Skipping seeding.");
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Database seeding failed: {ex.Message}");
+            // Don't throw here - let the application continue even if seeding fails
         }
     }
-    catch (Exception ex)
+}
+else
+{
+    // Production mode: Only seed essential badges for faster startup
+    Console.WriteLine("Production mode: Optimized startup (skipping test data seeding).");
+    
+    using (var scope = app.Services.CreateScope())
     {
-        Console.WriteLine($"Error during database initialization: {ex.Message}");
-        Console.WriteLine($"Exception type: {ex.GetType().Name}");
-        if (ex.InnerException != null)
+        try
         {
-            Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+            var context = scope.ServiceProvider.GetRequiredService<HabitChainDbContext>();
+            var hasBadges = await context.Badges.AnyAsync();
+            if (!hasBadges)
+            {
+                Console.WriteLine("No badges found. Seeding essential badges...");
+                await DbSeeder.SeedBadgesAsync(context);
+                await context.SaveChangesAsync();
+                Console.WriteLine("Essential badges seeded successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Badges already exist. Ready for requests.");
+            }
         }
-        // Don't throw here - let the application continue even if seeding fails
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Badge seeding failed: {ex.Message}");
+            // Don't throw here - let the application continue
+        }
     }
 }
 
