@@ -158,3 +158,4 @@
 /Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.WebAPI/bin/Debug/net9.0/Sprache.dll
 /Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.WebAPI/bin/Debug/net9.0/System.ClientModel.dll
 /Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.WebAPI/bin/Debug/net9.0/System.Memory.Data.dll
+/Users/bernardginnjr./Desktop/Bernard Ginn JR. Presonal Folder/HabitChain/backend/HabitChain.WebAPI/bin/Debug/net9.0/appsettings.Production.json
