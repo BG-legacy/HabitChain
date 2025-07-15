@@ -1,5 +1,35 @@
 # HabitChain Backend Deployment Guide
 
+## 🚀 **URGENT: Deploy Performance Optimizations**
+
+Your backend optimizations are ready but need to be deployed to production. Here's how:
+
+### Quick Deployment to Render
+
+1. **Commit your changes**:
+   ```bash
+   cd backend
+   git add .
+   git commit -m "Performance optimizations: faster registration, reduced seeding"
+   git push origin main
+   ```
+
+2. **Trigger Render deployment**:
+   - Go to https://render.com/dashboard
+   - Find your HabitChain backend service
+   - Click "Deploy Latest Commit" or it should auto-deploy
+
+3. **Monitor deployment**:
+   - Check build logs for "Production mode: Optimized startup"
+   - Should see "Badges already exist. Ready for requests." in logs
+
+### Expected Performance Improvements
+- **Registration**: 30+ seconds → 2-5 seconds
+- **Cold start**: 30+ seconds → 5-10 seconds
+- **Password hashing**: 10x faster (1,000 vs 10,000 iterations)
+
+---
+
 ## Overview
 This guide helps you deploy the HabitChain backend API to production, addressing the common issues encountered during deployment.
 
