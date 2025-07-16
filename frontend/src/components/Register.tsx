@@ -99,7 +99,7 @@ const Register: React.FC = () => {
     }
 
     setIsSubmitting(true);
-    const loadingToast = showLoading('Creating your account...');
+    const loadingToast = showLoading('Creating your account... This may take up to 60 seconds.');
 
     try {
       await register(formData);
@@ -108,7 +108,21 @@ const Register: React.FC = () => {
       navigate('/dashboard');
     } catch (error: any) {
       dismiss(loadingToast);
-      showError(error.message || 'Registration failed. Please try again.');
+      
+      // Enhanced error handling for different types of failures
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        errorMessage = 'Registration is taking longer than expected. This might be due to server startup time. Please try again in a few moments.';
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response?.data?.message || 'Invalid registration data. Please check your information and try again.';
+      } else if (error.response?.status >= 500) {
+        errorMessage = 'Server error during registration. Please try again in a few moments.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      showError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

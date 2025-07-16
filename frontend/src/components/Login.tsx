@@ -66,11 +66,27 @@ const Login: React.FC = () => {
     try {
       await login(formData);
       dismiss(loadingToast);
-      showSuccess('Welcome back! You have successfully signed in.');
+      showSuccess('Welcome back to HabitChain!');
       navigate('/dashboard');
     } catch (error: any) {
       dismiss(loadingToast);
-      showError(error.message || 'Login failed. Please check your credentials and try again.');
+      
+      // Enhanced error handling for different types of failures
+      let errorMessage = 'Login failed. Please check your credentials and try again.';
+      
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        errorMessage = 'Login is taking longer than expected. Please try again in a few moments.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response?.data?.message || 'Invalid login data. Please check your information.';
+      } else if (error.response?.status >= 500) {
+        errorMessage = 'Server error during login. Please try again in a few moments.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      showError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

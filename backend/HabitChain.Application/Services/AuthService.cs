@@ -60,14 +60,23 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
     {
-        // Use UserManager's built-in methods that utilize normalized email/username indexes
-        var existingUserByEmail = await _userManager.FindByEmailAsync(registerDto.Email);
+        // Optimized: Use a single database query to check both email and username existence
+        // This reduces database round trips from 2 queries to 1
+        var existingUsers = await _userManager.Users
+            .Where(u => u.NormalizedEmail == registerDto.Email.ToUpper() || 
+                       u.NormalizedUserName == registerDto.Username.ToUpper())
+            .Select(u => new { u.Email, u.UserName })
+            .ToListAsync();
+        
+        var existingUserByEmail = existingUsers.FirstOrDefault(u => 
+            u.Email?.Equals(registerDto.Email, StringComparison.OrdinalIgnoreCase) == true);
         if (existingUserByEmail != null)
         {
             throw new InvalidOperationException("User with this email already exists.");
         }
 
-        var existingUserByUsername = await _userManager.FindByNameAsync(registerDto.Username);
+        var existingUserByUsername = existingUsers.FirstOrDefault(u => 
+            u.UserName?.Equals(registerDto.Username, StringComparison.OrdinalIgnoreCase) == true);
         if (existingUserByUsername != null)
         {
             throw new InvalidOperationException("User with this username already exists.");
@@ -98,7 +107,7 @@ public class AuthService : IAuthService
         var accessToken = _jwtService.GenerateAccessToken(user);
         var refreshToken = _jwtService.GenerateRefreshToken();
         
-        // Save refresh token (this is async but we'll keep it for now)
+        // Save refresh token asynchronously
         await _jwtService.SaveRefreshTokenAsync(user.Id, refreshToken);
 
         var userDto = _mapper.Map<UserDto>(user);

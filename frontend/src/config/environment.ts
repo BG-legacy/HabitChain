@@ -17,7 +17,7 @@ export const config = {
   appVersion: '1.0.0',
   
   // Timeouts
-  apiTimeout: 30000, // 30 seconds - increased from 10 seconds to handle slower backend responses
+  apiTimeout: 60000, // 60 seconds - increased to handle slow registration and database operations
   tokenRefreshThreshold: 5 * 60 * 1000, // 5 minutes
   
   // Pagination
