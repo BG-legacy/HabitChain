@@ -358,9 +358,12 @@
 
 /* Date Details */
 .date-details {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-shadow);
   margin-bottom: 30px;
 }
 
@@ -369,12 +372,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 2px solid #e9ecef;
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .details-header h3 {
   margin: 0;
-  color: #2c3e50;
+  color: var(--color-white);
   font-size: 1.3rem;
 }
 
@@ -383,15 +386,15 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #7f8c8d;
+  color: var(--color-silver);
   padding: 4px;
   border-radius: 4px;
   transition: all 0.2s ease;
 }
 
 .close-details:hover {
-  background: #f8f9fa;
-  color: #2c3e50;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
 }
 
 .details-content {
@@ -411,7 +414,7 @@
   margin: 0 0 12px 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-white);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -428,25 +431,28 @@
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: white;
-  transition: all 0.2s ease;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  transition: all var(--transition-normal);
 }
 
 .habit-item:hover {
-  border-color: #d1d5db;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-color: var(--color-accent);
+  box-shadow: var(--glass-shadow);
+  transform: translateY(-2px);
 }
 
 .habit-item.completed {
-  background: #f0fdf4;
-  border-color: #a7f3d0;
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .habit-item.pending {
-  background: #fefce8;
-  border-color: #fde68a;
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
 .habit-color {
@@ -454,7 +460,7 @@
   height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -467,13 +473,13 @@
 
 .habit-info .habit-name {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-white);
   font-size: 0.9rem;
 }
 
 .habit-frequency {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--color-silver);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -482,6 +488,11 @@
   text-align: center;
   padding: var(--spacing-2xl) var(--spacing-lg);
   color: var(--color-silver);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
 }
 
 .no-habits-detail .empty-icon {
@@ -493,6 +504,26 @@
 .no-habits-detail p {
   font-size: var(--font-size-base);
   margin: 0;
+  color: var(--color-silver);
+}
+
+/* Add scrollbar styling for the habits list */
+.date-habits::-webkit-scrollbar {
+  width: 8px;
+}
+
+.date-habits::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.date-habits::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.date-habits::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Legend */
@@ -653,6 +684,36 @@
   
   .legend-item {
     font-size: 0.75rem;
+  }
+
+  .date-details {
+    margin: 8px;
+    max-height: 80vh;
+  }
+
+  .details-header {
+    padding: 16px;
+  }
+
+  .details-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .details-content {
+    padding: 16px;
+  }
+
+  .habit-item {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .habit-info .habit-name {
+    font-size: 0.85rem;
+  }
+
+  .habit-frequency {
+    font-size: 0.7rem;
   }
 }
 
