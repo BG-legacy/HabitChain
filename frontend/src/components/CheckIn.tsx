@@ -347,34 +347,6 @@ const CheckIn: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Quick Stats */}
-      <div className="quick-stats">
-        <h2>Today's Progress</h2>
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon">📊</div>
-            <div className="stat-content">
-              <h3>{habits.length}</h3>
-              <p>Total Habits</p>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">✅</div>
-            <div className="stat-content">
-              <h3>{habits.filter(h => h.lastCheckIn && new Date(h.lastCheckIn).toDateString() === new Date().toDateString()).length}</h3>
-              <p>Completed Today</p>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">🔥</div>
-            <div className="stat-content">
-              <h3>{Math.max(...habits.map(h => h.currentStreak))}</h3>
-              <p>Longest Active Streak</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

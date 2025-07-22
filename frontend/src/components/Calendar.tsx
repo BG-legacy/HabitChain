@@ -331,23 +331,6 @@ const Calendar: React.FC = () => {
                       >
                         <div className="habit-header">
                           <span className="habit-name">⏳ {habit.name}</span>
-                          <div className="habit-actions">
-                            <CompleteHabitButton 
-                              habitId={habit.id}
-                              habitName={habit.name}
-                              size="small"
-                              variant="minimal"
-                              onComplete={fetchData}
-                            />
-                            <CheckInButton 
-                              habitId={habit.id}
-                              habitName={habit.name}
-                              size="small"
-                              variant="detailed"
-                              showModal={true}
-                              onCheckIn={fetchData}
-                            />
-                          </div>
                         </div>
                       </div>
                     ))}
@@ -367,100 +350,87 @@ const Calendar: React.FC = () => {
 
       {/* Selected Date Details */}
       {selectedDate && (
-        <div className="date-details">
-          <div className="details-header">
-            <h3>{selectedDate.toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}</h3>
-            <button 
-              className="close-details"
-              onClick={() => setSelectedDate(null)}
-            >
-              ✕
-            </button>
-          </div>
-          
-          <div className="details-content">
-            {(() => {
-              const dateString = formatDate(selectedDate);
-              const dayHabits = getHabitsForDate(dateString);
-              const isToday = formatDate(new Date()) === dateString;
-              
-              return (
-                <div className="date-habits">
-                  {/* Completed Habits */}
-                  {dayHabits.completed.length > 0 && (
-                    <div className="habits-section">
-                      <h4>✅ Completed Habits ({dayHabits.completed.length})</h4>
-                      <div className="habits-list">
-                        {dayHabits.completed.map(habit => (
-                          <div key={habit.id} className="habit-item completed">
-                            <div 
-                              className="habit-color" 
-                              style={{ backgroundColor: habit.color }}
-                            ></div>
-                            <div className="habit-info">
-                              <span className="habit-name">{habit.name}</span>
-                              <span className="habit-frequency">{habit.frequency}</span>
+        <>
+          <div className="modal-backdrop" onClick={() => setSelectedDate(null)} />
+          <div className="date-details">
+            <div className="details-header">
+              <h3>{selectedDate.toLocaleDateString('en-US', { 
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}</h3>
+              <button 
+                className="close-details"
+                onClick={() => setSelectedDate(null)}
+                aria-label="Close details"
+              >
+                ×
+              </button>
+            </div>
+            <div className="details-content">
+              {(() => {
+                const dateString = formatDate(selectedDate);
+                const dayHabits = getHabitsForDate(dateString);
+                const isToday = formatDate(new Date()) === dateString;
+
+                return (
+                  <div className="date-habits">
+                    {/* Completed Habits */}
+                    {dayHabits.completed.length > 0 && (
+                      <div className="habits-section">
+                        <h4>✅ Completed Habits ({dayHabits.completed.length})</h4>
+                        <div className="habits-list">
+                          {dayHabits.completed.map(habit => (
+                            <div key={habit.id} className="habit-item completed">
+                              <div 
+                                className="habit-color" 
+                                style={{ backgroundColor: habit.color }}
+                              ></div>
+                              <div className="habit-info">
+                                <span className="habit-name">{habit.name}</span>
+                                <span className="habit-frequency">{habit.frequency}</span>
+                              </div>
+                              <div className="habit-streak">🔥 {habit.currentStreak}</div>
                             </div>
-                            <div className="habit-streak">🔥 {habit.currentStreak}</div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  
-                  {/* Pending Habits (only for today) */}
-                  {isToday && dayHabits.pending.length > 0 && (
-                    <div className="habits-section">
-                      <h4>⏳ Pending Habits ({dayHabits.pending.length})</h4>
-                      <div className="habits-list">
-                        {dayHabits.pending.map(habit => (
-                          <div key={habit.id} className="habit-item pending">
-                            <div 
-                              className="habit-color" 
-                              style={{ backgroundColor: habit.color }}
-                            ></div>
-                            <div className="habit-info">
-                              <span className="habit-name">{habit.name}</span>
-                              <span className="habit-frequency">{habit.frequency}</span>
+                    )}
+                    
+                    {/* Pending Habits (only for today) */}
+                    {isToday && dayHabits.pending.length > 0 && (
+                      <div className="habits-section">
+                        <h4>⏳ Pending Habits ({dayHabits.pending.length})</h4>
+                        <div className="habits-list">
+                          {dayHabits.pending.map(habit => (
+                            <div key={habit.id} className="habit-item pending">
+                              <div 
+                                className="habit-color" 
+                                style={{ backgroundColor: habit.color }}
+                              ></div>
+                              <div className="habit-info">
+                                <span className="habit-name">{habit.name}</span>
+                                <span className="habit-frequency">{habit.frequency}</span>
+                              </div>
                             </div>
-                            <div className="habit-actions">
-                              <CompleteHabitButton 
-                                habitId={habit.id}
-                                habitName={habit.name}
-                                size="small"
-                                variant="outlined"
-                                onComplete={fetchData}
-                              />
-                              <CheckInButton 
-                                habitId={habit.id}
-                                habitName={habit.name}
-                                size="small"
-                                variant="minimal"
-                                onCheckIn={fetchData}
-                              />
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  
-                  {dayHabits.completed.length === 0 && (!isToday || dayHabits.pending.length === 0) && (
-                    <div className="no-habits-detail">
-                      <div className="empty-icon">📅</div>
-                      <p>{isToday ? 'All habits completed for today! 🎉' : 'No habit activity for this date'}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
+                    )}
+                    
+                    {dayHabits.completed.length === 0 && (!isToday || dayHabits.pending.length === 0) && (
+                      <div className="no-habits-detail">
+                        <div className="empty-icon">📅</div>
+                        <p>{isToday ? 'All habits completed for today! 🎉' : 'No habit activity for this date'}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Calendar Legend */}

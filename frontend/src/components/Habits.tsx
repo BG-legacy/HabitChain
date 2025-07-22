@@ -6,6 +6,7 @@ import { ApiService } from '../services/api';
 import CompleteHabitButton from './CompleteHabitButton';
 import CheckInButton from './CheckInButton';
 import './Habits.css';
+import HabitCard from './HabitCard';
 
 interface Habit {
   id: string;
@@ -415,88 +416,27 @@ const Habits: React.FC = () => {
       ) : (
         <div className="habits-grid">
           {habits.map(habit => (
-            <div key={habit.id} className={`habit-card ${!habit.isActive ? 'inactive' : ''}`}>
-              <div className="habit-header">
-                <div className="habit-title">
-                  <h3>{habit.name}</h3>
-                  <span className={`status-badge ${habit.isActive ? 'active' : 'inactive'}`}>
-                    {habit.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-                <div className="habit-menu">
-                  <button 
-                    className="menu-btn"
-                    onClick={() => handleToggleActive(habit.id)}
-                  >
-                    {habit.isActive ? '⏸️' : '▶️'}
-                  </button>
-                  <button 
-                    className="menu-btn"
-                    onClick={() => {
-                      setEditingHabit(habit);
-                      setFormData({
-                        name: habit.name,
-                        description: habit.description,
-                        frequency: habit.frequency,
-                        targetDays: habit.targetDays
-                      });
-                      setShowForm(true);
-                    }}
-                  >
-                    ✏️
-                  </button>
-                  <button 
-                    className="menu-btn delete"
-                    onClick={() => handleDelete(habit.id)}
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-              
-              <p className="habit-description">{habit.description}</p>
-              
-              <div className="habit-meta">
-                <span className="frequency-badge">{habit.frequency}</span>
-                <span className="target-badge">{habit.targetDays} day{habit.targetDays > 1 ? 's' : ''}</span>
-              </div>
-              
-              <div className="habit-stats">
-                <div className="stat-item">
-                  <span className="stat-label">Current Streak</span>
-                  <span className="stat-value streak">🔥 {habit.currentStreak}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Longest Streak</span>
-                  <span className="stat-value longest">🏆 {habit.longestStreak}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Total Check-ins</span>
-                  <span className="stat-value total">✅ {habit.totalCheckIns}</span>
-                </div>
-              </div>
-              
-              <div className="habit-actions">
-                <CompleteHabitButton 
-                  habitId={habit.id}
-                  habitName={habit.name}
-                  isCompleted={habit.lastCheckIn ? new Date(habit.lastCheckIn).toDateString() === new Date().toDateString() : false}
-                  onComplete={() => fetchHabits()}
-                  size="medium"
-                />
-                <CheckInButton 
-                  habitId={habit.id}
-                  habitName={habit.name}
-                  isCompleted={habit.lastCheckIn ? new Date(habit.lastCheckIn).toDateString() === new Date().toDateString() : false}
-                  variant="outlined"
-                  size="medium"
-                  onCheckIn={() => fetchHabits()}
-                />
-                <Link to={`/habits/${habit.id}`} className="btn-view">
-                  View Details
-                </Link>
-              </div>
-            </div>
+            <HabitCard
+              key={habit.id}
+              habit={{
+                ...habit,
+                targetDays: habit.targetDays ?? 1,
+                createdAt: habit.createdAt || new Date().toISOString(),
+              }}
+              onToggleActive={handleToggleActive}
+              onDelete={handleDelete}
+              onEdit={(id) => {
+                setEditingHabit(habit);
+                setFormData({
+                  name: habit.name,
+                  description: habit.description,
+                  frequency: habit.frequency,
+                  targetDays: habit.targetDays
+                });
+                setShowForm(true);
+              }}
+              showActions={true}
+            />
           ))}
         </div>
       )}

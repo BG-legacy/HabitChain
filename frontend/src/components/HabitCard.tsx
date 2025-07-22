@@ -80,6 +80,31 @@ const HabitCard: React.FC<HabitCardProps> = ({
           {getFrequencyIcon(habit.frequency)}
         </div>
         <div className="habit-status">
+          {showActions && (
+            <>
+              <button 
+                className="action-btn"
+                onClick={() => onToggleActive?.(habit.id)}
+                title={habit.isActive ? 'Pause habit' : 'Activate habit'}
+              >
+                {habit.isActive ? '⏸️' : '▶️'}
+              </button>
+              <button 
+                className="action-btn"
+                onClick={() => onEdit?.(habit.id)}
+                title="Edit habit"
+              >
+                ✏️
+              </button>
+              <button 
+                className="action-btn"
+                onClick={() => onDelete?.(habit.id)}
+                title="Delete habit"
+              >
+                🗑️
+              </button>
+            </>
+          )}
           <span className={`status-badge ${habit.isActive ? 'active' : 'inactive'}`}>
             {habit.isActive ? 'Active' : 'Inactive'}
           </span>
@@ -88,7 +113,7 @@ const HabitCard: React.FC<HabitCardProps> = ({
 
       <div className="habit-content">
         <h3 className="habit-name">{habit.name}</h3>
-        <p className="habit-description">{habit.description}</p>
+        {habit.description && <p className="habit-description">{habit.description}</p>}
         
         <div className="habit-details">
           <div className="detail-item">
@@ -104,41 +129,23 @@ const HabitCard: React.FC<HabitCardProps> = ({
         <div className="habit-stats">
           <div className="stat-item">
             <div className="stat-value" style={{ color: getStreakColor(habit.currentStreak) }}>
-              {habit.currentStreak}
+              🔥 {habit.currentStreak}
             </div>
             <div className="stat-label">Current Streak</div>
           </div>
           <div className="stat-item">
-            <div className="stat-value">{habit.longestStreak}</div>
+            <div className="stat-value">
+              🏆 {habit.longestStreak}
+            </div>
             <div className="stat-label">Longest Streak</div>
           </div>
           <div className="stat-item">
-            <div className="stat-value">{habit.totalCheckIns}</div>
+            <div className="stat-value">
+              ✅ {habit.totalCheckIns}
+            </div>
             <div className="stat-label">Total Check-ins</div>
           </div>
-          {habit.completionRate !== undefined && (
-            <div className="stat-item">
-              <div className="stat-value" style={{ color: habit.completionRate >= 80 ? '#28a745' : habit.completionRate >= 60 ? '#ffc107' : '#dc3545' }}>
-                {habit.completionRate.toFixed(1)}%
-              </div>
-              <div className="stat-label">Completion Rate</div>
-            </div>
-          )}
         </div>
-
-        {habit.completionRate !== undefined && (
-          <div className="completion-details">
-            <div className="completion-bar">
-              <div 
-                className="completion-fill" 
-                style={{ 
-                  width: `${Math.min(habit.completionRate, 100)}%`,
-                  backgroundColor: habit.completionRate >= 80 ? '#28a745' : habit.completionRate >= 60 ? '#ffc107' : '#dc3545'
-                }}
-              />
-            </div>
-          </div>
-        )}
 
         <div className="habit-meta">
           <span className="created-date">Created: {formatDate(habit.createdAt)}</span>
@@ -152,38 +159,11 @@ const HabitCard: React.FC<HabitCardProps> = ({
             onClick={handleComplete}
             disabled={completing}
           >
-            {completing ? 'Completing...' : 'Complete'}
+            {completing ? '⏳ Completing...' : '🎯 Complete'}
           </button>
           <Link to={`/habits/${habit.id}`} className="action-btn primary">
-            View Details
+            📊 View Details
           </Link>
-          
-          {onEdit && (
-            <button 
-              className="action-btn secondary"
-              onClick={() => onEdit(habit.id)}
-            >
-              Edit
-            </button>
-          )}
-          
-          {onToggleActive && (
-            <button 
-              className={`action-btn ${habit.isActive ? 'warning' : 'success'}`}
-              onClick={() => onToggleActive(habit.id)}
-            >
-              {habit.isActive ? 'Pause' : 'Activate'}
-            </button>
-          )}
-          
-          {onDelete && (
-            <button 
-              className="action-btn danger"
-              onClick={() => onDelete(habit.id)}
-            >
-              Delete
-            </button>
-          )}
         </div>
       )}
     </div>
