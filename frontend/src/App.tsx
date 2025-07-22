@@ -7,7 +7,7 @@ import { DashboardProvider } from './contexts/DashboardContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
-import { AnimatedNavbar, PageTransition } from './components/AnimatedComponents';
+import { AnimatedNavbar } from './components/AnimatedComponents';
 import Navbar from './components/Navbar';
 import Landing from './components/Landing';
 import Login from './components/Login';
@@ -159,6 +159,8 @@ const Layout: React.FC = () => {
 };
 
 function App() {
+  console.log("🚀 HabitChain App is loading! If you see this, your console is working.");
+  
   return (
     <ErrorBoundary>
       <AuthProvider>

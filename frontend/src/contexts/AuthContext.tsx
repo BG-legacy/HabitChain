@@ -110,7 +110,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [clearAuth]);
 
   // Initialize authentication state
-  const initializeAuth = async () => {
+  const initializeAuth = useCallback(async () => {
     try {
       const storedToken = localStorage.getItem('accessToken');
       const storedRefreshToken = localStorage.getItem('refreshToken');
@@ -140,7 +140,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [refreshAuth, clearAuth]);
 
   // Check token expiration periodically
   useEffect(() => {
@@ -160,7 +160,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Initialize auth on mount
   useEffect(() => {
     initializeAuth();
-  }, []);
+  }, [initializeAuth]);
 
   const login = async (credentials: LoginCredentials): Promise<void> => {
     try {
