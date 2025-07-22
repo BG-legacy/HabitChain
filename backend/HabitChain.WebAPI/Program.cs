@@ -93,11 +93,11 @@ builder.Services.AddDbContext<HabitChainDbContext>(options =>
 // Add ASP.NET Identity with performance optimizations
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
-    // Simplified password settings for faster registration
+    // Password settings that allow uppercase letters
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;  // Reduced requirement
+    options.Password.RequireUppercase = true;  // Enable uppercase requirement
     options.Password.RequiredLength = 6;
     options.Password.RequiredUniqueChars = 0;   // Reduced requirement
 

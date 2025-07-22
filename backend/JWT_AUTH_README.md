@@ -132,6 +132,7 @@ Content-Type: application/json
 ### Password Security
 - Minimum 6 characters
 - Requires uppercase, lowercase, and digit
+- No special characters required
 - Hashed using ASP.NET Identity's secure hashing
 
 ### Database Security
