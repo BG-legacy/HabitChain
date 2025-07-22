@@ -33,8 +33,18 @@ const checkTokenExpired = (token: string): boolean => {
     const payload = JSON.parse(atob(token.split('.')[1]));
     const expirationTime = payload.exp * 1000; // Convert to milliseconds
     const currentTime = Date.now();
-    return currentTime >= expirationTime;
+    const isExpired = currentTime >= expirationTime;
+    
+    console.log('⏰ Token expiration check:', {
+      expirationTime: new Date(expirationTime).toISOString(),
+      currentTime: new Date(currentTime).toISOString(),
+      timeUntilExpiry: (expirationTime - currentTime) / 1000 / 60, // minutes
+      isExpired
+    });
+    
+    return isExpired;
   } catch (error) {
+    console.error('🚫 Error parsing token:', error);
     return true; // If we can't parse the token, consider it expired
   }
 };
@@ -154,20 +164,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: LoginCredentials): Promise<void> => {
     try {
+      console.log('🔐 AuthContext: Starting login API call...');
       const response: AuthResponse = await AuthService.login(credentials);
+      
+      console.log('📡 AuthContext: Login API response received:', {
+        hasToken: !!response.token,
+        hasRefreshToken: !!response.refreshToken,
+        hasUser: !!response.user,
+        userEmail: response.user?.email
+      });
       
       // Store tokens and user data
       localStorage.setItem('accessToken', response.token);
       localStorage.setItem('refreshToken', response.refreshToken);
       localStorage.setItem('user', JSON.stringify(response.user));
       
+      console.log('💾 AuthContext: Tokens and user stored in localStorage');
+      
       // Update state
       setToken(response.token);
       setRefreshToken(response.refreshToken);
       setUser(response.user);
       setIsTokenExpired(false);
+      
+      console.log('🔄 AuthContext: State updated, new auth status should be true');
+      console.log('✅ AuthContext: Login completed successfully');
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('❌ AuthContext: Login failed:', error);
       throw error;
     }
   };
@@ -218,7 +241,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     token,
     refreshToken,
-    isAuthenticated: !!user && !!token && !isTokenExpired,
+    isAuthenticated: (() => {
+      const authStatus = !!user && !!token && !isTokenExpired;
+      console.log('🔍 AuthContext: isAuthenticated calculation:', {
+        hasUser: !!user,
+        hasToken: !!token,
+        isTokenExpired,
+        finalAuthStatus: authStatus
+      });
+      return authStatus;
+    })(),
     isLoading,
     isTokenExpired,
     login,

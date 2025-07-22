@@ -24,7 +24,18 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [isLoading, isAuthenticated, checkTokenExpiration]);
 
+  // Debug logging
+  console.log('🛡️ ProtectedRoute check:', {
+    isAuthenticated,
+    isLoading,
+    isTokenExpired,
+    hasUser: !!user,
+    userActive: user?.isActive,
+    pathname: location.pathname
+  });
+
   if (isLoading) {
+    console.log('⏳ ProtectedRoute: Still loading auth state...');
     // Show loading spinner while checking authentication
     return (
       <div className="route-loading-container">
@@ -38,12 +49,17 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Check if user is authenticated and token is not expired
   if (!isAuthenticated || isTokenExpired) {
+    console.log('🚫 ProtectedRoute: Redirecting to login because:', {
+      isAuthenticated,
+      isTokenExpired
+    });
     // Redirect to login page, saving the attempted location
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
   // Check if user account is active (if required)
   if (requireActiveUser && user && !user.isActive) {
+    console.log('⛔ ProtectedRoute: User account is inactive');
     return (
       <div className="route-error-container">
         <div className="route-error-card">
@@ -60,6 +76,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
+  console.log('✅ ProtectedRoute: Allowing access to protected content');
   return <>{children}</>;
 };
 

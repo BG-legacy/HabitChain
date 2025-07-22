@@ -64,11 +64,26 @@ const Login: React.FC = () => {
     const loadingToast = showLoading('⚡ Signing you in instantly...');
 
     try {
+      console.log('🔐 Starting login process...');
+      console.log('📧 Email:', formData.email);
+      
       await login(formData);
-      dismiss(loadingToast);
-      showSuccess('🎉 Welcome back! Signed in instantly!');
-      navigate('/dashboard');
+      
+      console.log('✅ Login successful, checking auth state...');
+      console.log('🏪 Access Token in localStorage:', !!localStorage.getItem('accessToken'));
+      console.log('🔄 Refresh Token in localStorage:', !!localStorage.getItem('refreshToken'));
+      console.log('👤 User in localStorage:', !!localStorage.getItem('user'));
+      
+      // Add a small delay to ensure state is updated
+      setTimeout(() => {
+        console.log('🚀 Attempting navigation to dashboard...');
+        dismiss(loadingToast);
+        showSuccess('🎉 Welcome back! Signed in instantly!');
+        navigate('/dashboard');
+      }, 100);
+      
     } catch (error: any) {
+      console.error('❌ Login failed:', error);
       dismiss(loadingToast);
       
       // Enhanced error handling with instant feedback
@@ -98,6 +113,41 @@ const Login: React.FC = () => {
         <div className="auth-header">
           <h1>Welcome Back</h1>
           <p>Sign in to your HabitChain account</p>
+        </div>
+
+        {/* Quick test button for debugging */}
+        <div style={{ marginBottom: '1rem', padding: '0.5rem', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+          <button 
+            type="button"
+            onClick={async () => {
+              try {
+                console.log('🧪 Testing API connection...');
+                const response = await fetch('https://habitchain.onrender.com/api/auth/login', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ email: 'test@example.com', password: 'TestPassword123!' })
+                });
+                console.log('📡 API Response Status:', response.status);
+                const data = await response.json();
+                console.log('📦 API Response Data:', data);
+                alert(`API Test: ${response.status} - Check console for details`);
+              } catch (error) {
+                console.error('🚫 API Test Error:', error);
+                alert('API Test Failed - Check console for details');
+              }
+            }}
+            style={{ 
+              padding: '8px 16px', 
+              backgroundColor: '#6366f1', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '4px', 
+              cursor: 'pointer',
+              fontSize: '12px'
+            }}
+          >
+            🧪 Test API Connection
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">

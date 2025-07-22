@@ -22,7 +22,17 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
     }
   }, [isLoading, isAuthenticated, checkTokenExpiration]);
 
+  // Debug logging
+  console.log('🔓 PublicRoute check:', {
+    isAuthenticated,
+    isLoading,
+    isTokenExpired,
+    pathname: location.pathname,
+    shouldRedirect: isAuthenticated && !isTokenExpired
+  });
+
   if (isLoading) {
+    console.log('⏳ PublicRoute: Still loading auth state...');
     // Show loading spinner while checking authentication
     return (
       <div className="route-loading-container">
@@ -36,12 +46,14 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
 
   // Check if user is authenticated and token is not expired
   if (isAuthenticated && !isTokenExpired) {
+    console.log('🔄 PublicRoute: Redirecting authenticated user away from public route');
     // Redirect authenticated users to the specified route
     // Use the from location if available, otherwise use redirectTo
     const from = location.state?.from?.pathname || redirectTo;
     return <Navigate to={from} replace />;
   }
 
+  console.log('✅ PublicRoute: Allowing access to public content');
   return <>{children}</>;
 };
 
