@@ -1,4 +1,6 @@
 # HabitChain 🔗
+<img width="2224" height="1222" alt="Screenshot 2025-07-22 at 7 43 21 PM" src="https://github.com/user-attachments/assets/0cc77f9b-269c-418f-aae4-0c2594da4f18" />
+
 
 A modern, full-stack habit tracking application built with .NET 9 and React. HabitChain helps users build and maintain positive habits through gamification, AI-powered recommendations, and social encouragement features.
 
@@ -19,8 +21,7 @@ A modern, full-stack habit tracking application built with .NET 9 and React. Hab
 
 ### Advanced Features
 - **🤖 AI-Powered Recommendations** - Get personalized habit suggestions using OpenAI
-- **💬 Social Encouragements** - Send and receive motivational messages
-- **📋 Data Export** - Export habit data in multiple formats (JSON, CSV, PDF)
+- **📋 Data Export** - Export habit data in CSV
 - **🔔 Session Management** - Smart session expiration warnings
 - **📱 Responsive Design** - Modern glassmorphism UI optimized for all devices
 
