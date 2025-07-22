@@ -47,10 +47,14 @@ The application will open at [http://localhost:3000](http://localhost:3000).
 - **Last Name**: Required, maximum 100 characters
 - **Email**: Required, must be a valid email format
 - **Username**: Required, 3-50 characters, alphanumeric and underscores only
-- **Password**: Required, minimum 6 characters, maximum 100 characters
+- **Password**: Required, 6-100 characters with specific requirements:
+  - At least one lowercase letter (a-z)
+  - At least one uppercase letter (A-Z)
+  - At least one number (0-9)
 - **Confirm Password**: Required, must match password
 - **Features**:
-  - Real-time validation
+  - Real-time validation with visual feedback
+  - Password strength indicators
   - Password confirmation
   - Error handling
   - Loading states

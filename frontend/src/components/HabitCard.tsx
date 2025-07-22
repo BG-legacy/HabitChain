@@ -137,18 +137,6 @@ const HabitCard: React.FC<HabitCardProps> = ({
                 }}
               />
             </div>
-            <div className="completion-breakdown">
-              {habit.weeklyCompletionRate !== undefined && (
-                <span className="completion-item">
-                  Week: {habit.weeklyCompletionRate.toFixed(1)}%
-                </span>
-              )}
-              {habit.monthlyCompletionRate !== undefined && (
-                <span className="completion-item">
-                  Month: {habit.monthlyCompletionRate.toFixed(1)}%
-                </span>
-              )}
-            </div>
           </div>
         )}
 

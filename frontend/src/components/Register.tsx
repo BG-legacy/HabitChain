@@ -62,6 +62,19 @@ const Register: React.FC = () => {
       newErrors.password = 'Password must be at least 6 characters long';
     } else if (formData.password.length > 100) {
       newErrors.password = 'Password must be less than 100 characters';
+    } else {
+      // Check for required character types
+      const hasLowercase = /[a-z]/.test(formData.password);
+      const hasUppercase = /[A-Z]/.test(formData.password);
+      const hasDigit = /\d/.test(formData.password);
+      
+      if (!hasLowercase) {
+        newErrors.password = 'Password must contain at least one lowercase letter';
+      } else if (!hasUppercase) {
+        newErrors.password = 'Password must contain at least one uppercase letter';
+      } else if (!hasDigit) {
+        newErrors.password = 'Password must contain at least one number';
+      }
     }
 
     // Confirm password validation
@@ -219,6 +232,15 @@ const Register: React.FC = () => {
               disabled={isSubmitting}
             />
             {errors.password && <span className="error-text">{errors.password}</span>}
+            <div className="password-requirements">
+              <small>Password must contain:</small>
+              <ul>
+                <li className={formData.password.length >= 6 ? 'valid' : ''}>At least 6 characters</li>
+                <li className={/[a-z]/.test(formData.password) ? 'valid' : ''}>One lowercase letter</li>
+                <li className={/[A-Z]/.test(formData.password) ? 'valid' : ''}>One uppercase letter</li>
+                <li className={/\d/.test(formData.password) ? 'valid' : ''}>One number</li>
+              </ul>
+            </div>
           </div>
 
           <div className="form-group">
