@@ -60,23 +60,14 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
     {
-        // Optimized: Use a single database query to check both email and username existence
-        // This reduces database round trips from 2 queries to 1
-        var existingUsers = await _userManager.Users
-            .Where(u => u.NormalizedEmail == registerDto.Email.ToUpper() || 
-                       u.NormalizedUserName == registerDto.Username.ToUpper())
-            .Select(u => new { u.Email, u.UserName })
-            .ToListAsync();
-        
-        var existingUserByEmail = existingUsers.FirstOrDefault(u => 
-            u.Email?.Equals(registerDto.Email, StringComparison.OrdinalIgnoreCase) == true);
+        // Use UserManager's optimized methods that utilize indexed lookups
+        var existingUserByEmail = await _userManager.FindByEmailAsync(registerDto.Email);
         if (existingUserByEmail != null)
         {
             throw new InvalidOperationException("User with this email already exists.");
         }
 
-        var existingUserByUsername = existingUsers.FirstOrDefault(u => 
-            u.UserName?.Equals(registerDto.Username, StringComparison.OrdinalIgnoreCase) == true);
+        var existingUserByUsername = await _userManager.FindByNameAsync(registerDto.Username);
         if (existingUserByUsername != null)
         {
             throw new InvalidOperationException("User with this username already exists.");

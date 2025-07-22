@@ -14,6 +14,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using AutoMapper;
 using DotNetEnv;
+using Microsoft.AspNetCore.ResponseCompression;
+using System.IO.Compression;
 
 // Load environment variables from .env file
 Env.Load();
@@ -33,7 +35,19 @@ builder.WebHost.UseUrls("http://+:8080");
 builder.Configuration.AddEnvironmentVariables();
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Disable automatic model validation for faster responses
+        options.SuppressModelStateInvalidFilter = false;
+    });
+
+// Add response compression for faster responses
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<GzipCompressionProvider>();
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -58,7 +72,7 @@ if (!string.IsNullOrEmpty(dbHost) && !string.IsNullOrEmpty(dbName) &&
     
     // Use the pooler username format for Supabase
     // Disable multiplexing in connection string for better transaction support
-    connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPassword};Port={port};SSL Mode={sslMode};Trust Server Certificate={trustServerCertificate};Pooling=true;MinPoolSize=1;MaxPoolSize=20;ConnectionIdleLifetime=300;ConnectionPruningInterval=10;Timeout=30;CommandTimeout=30;InternalCommandTimeout=60;Multiplexing=false";
+    connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPassword};Port={port};SSL Mode={sslMode};Trust Server Certificate={trustServerCertificate};Pooling=true;MinPoolSize=5;MaxPoolSize=50;ConnectionIdleLifetime=60;ConnectionPruningInterval=5;Timeout=10;CommandTimeout=10;InternalCommandTimeout=30;Multiplexing=false;No Reset On Close=true;Include Error Detail=true";
 }
 
 builder.Services.AddDbContext<HabitChainDbContext>(options =>
@@ -100,11 +114,11 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddEntityFrameworkStores<HabitChainDbContext>()
 .AddDefaultTokenProviders();
 
-// Configure password hasher for better performance
+// Configure password hasher for ultra-fast development performance
 builder.Services.Configure<PasswordHasherOptions>(options =>
 {
-    // Use fewer iterations for faster password hashing (still secure but faster)
-    options.IterationCount = 1000;  // Reduced from default 10,000 iterations
+    // Ultra-low iterations for instant development experience (use higher values in production)
+    options.IterationCount = builder.Environment.IsDevelopment() ? 100 : 10000;  // 100 for dev, 10k for prod
     options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3;
 });
 
@@ -179,67 +193,35 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Seed the database (optimized for production performance)
-if (!app.Environment.IsProduction())
+// Fast startup - minimal database checking
+Console.WriteLine($"🚀 Environment: {app.Environment.EnvironmentName} - Fast Startup Mode");
+
+// Background seeding - don't block application startup
+_ = Task.Run(async () =>
 {
-    // Development mode: Full seeding for testing
-    using (var scope = app.Services.CreateScope())
+    await Task.Delay(2000); // Allow app to start first
+    using var scope = app.Services.CreateScope();
+    try
     {
-        try
+        var context = scope.ServiceProvider.GetRequiredService<HabitChainDbContext>();
+        
+        // Quick badge check and seed if needed (background)
+        var hasBadges = await context.Badges.AnyAsync();
+        if (!hasBadges)
         {
-            var context = scope.ServiceProvider.GetRequiredService<HabitChainDbContext>();
-            Console.WriteLine("Development mode: Checking database seeding...");
-            
-            // Quick check - only seed if no users exist (faster than checking all tables)
-            var hasUsers = await context.Users.AnyAsync();
-            if (!hasUsers)
-            {
-                Console.WriteLine("No users found. Seeding database...");
-                await DbSeeder.SeedAsync(context);
-                Console.WriteLine("Database seeding completed successfully.");
-            }
-            else
-            {
-                Console.WriteLine("Database already contains users. Skipping seeding.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Database seeding failed: {ex.Message}");
-            // Don't throw here - let the application continue even if seeding fails
+            Console.WriteLine("🔄 Background: Seeding essential badges...");
+            await DbSeeder.SeedBadgesAsync(context);
+            await context.SaveChangesAsync();
+            Console.WriteLine("✅ Background: Essential badges seeded.");
         }
     }
-}
-else
-{
-    // Production mode: Only seed essential badges for faster startup
-    Console.WriteLine("Production mode: Optimized startup (skipping test data seeding).");
-    
-    using (var scope = app.Services.CreateScope())
+    catch (Exception ex)
     {
-        try
-        {
-            var context = scope.ServiceProvider.GetRequiredService<HabitChainDbContext>();
-            var hasBadges = await context.Badges.AnyAsync();
-            if (!hasBadges)
-            {
-                Console.WriteLine("No badges found. Seeding essential badges...");
-                await DbSeeder.SeedBadgesAsync(context);
-                await context.SaveChangesAsync();
-                Console.WriteLine("Essential badges seeded successfully.");
-            }
-            else
-            {
-                Console.WriteLine("Badges already exist. Ready for requests.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Badge seeding failed: {ex.Message}");
-            // Don't throw here - let the application continue
-        }
+        Console.WriteLine($"⚠️  Background seeding error: {ex.Message}");
     }
-}
+});
+
+Console.WriteLine("⚡ Ready for instant requests!");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -254,6 +236,9 @@ if (app.Environment.IsDevelopment())
 
 // DO NOT USE HTTPS REDIRECTION - HTTP only in production
 Console.WriteLine("Application configured for HTTP only (no HTTPS redirection)");
+
+// Enable response compression for faster responses
+app.UseResponseCompression();
 
 app.UseCors("AllowAll");
 

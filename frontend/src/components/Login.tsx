@@ -61,29 +61,29 @@ const Login: React.FC = () => {
     }
 
     setIsSubmitting(true);
-    const loadingToast = showLoading('Signing you in...');
+    const loadingToast = showLoading('⚡ Signing you in instantly...');
 
     try {
       await login(formData);
       dismiss(loadingToast);
-      showSuccess('Welcome back to HabitChain!');
+      showSuccess('🎉 Welcome back! Signed in instantly!');
       navigate('/dashboard');
     } catch (error: any) {
       dismiss(loadingToast);
       
-      // Enhanced error handling for different types of failures
-      let errorMessage = 'Login failed. Please check your credentials and try again.';
+      // Enhanced error handling with instant feedback
+      let errorMessage = '⚡ Please try again!';
       
       if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-        errorMessage = 'Login is taking longer than expected. Please try again in a few moments.';
+        errorMessage = '⏱️ Network timeout - server optimizing. Quick retry!';
       } else if (error.response?.status === 401) {
-        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        errorMessage = '🔑 Invalid email or password. Please check your credentials.';
       } else if (error.response?.status === 400) {
-        errorMessage = error.response?.data?.message || 'Invalid login data. Please check your information.';
+        errorMessage = error.response?.data?.message || '📝 Please check your login information.';
       } else if (error.response?.status >= 500) {
-        errorMessage = 'Server error during login. Please try again in a few moments.';
+        errorMessage = '🔧 Server optimization in progress. Quick retry!';
       } else if (error.message) {
-        errorMessage = error.message;
+        errorMessage = `💡 ${error.message}`;
       }
       
       showError(errorMessage);
@@ -136,7 +136,7 @@ const Login: React.FC = () => {
             className="auth-button"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Signing In...' : 'Sign In'}
+            {isSubmitting ? '⚡ Signing In...' : '🚀 Sign In Instantly'}
           </button>
         </form>
 

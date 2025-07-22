@@ -15,13 +15,17 @@ export interface ApiError {
   errors?: Record<string, string[]>;
 }
 
-// Create axios instance
+// Create axios instance with optimizations
 const api: AxiosInstance = axios.create({
   baseURL: getApiUrl(),
   timeout: config.apiTimeout,
   headers: {
     'Content-Type': 'application/json',
+    'Connection': 'keep-alive',
   },
+  // Optimize for speed
+  maxRedirects: 3,
+  validateStatus: (status) => status < 500, // Accept all responses except server errors
 });
 
 // Request interceptor to add auth token

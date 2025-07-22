@@ -1,7 +1,7 @@
 // Environment Configuration
 export const config = {
   // API Configuration
-  apiUrl: process.env.REACT_APP_API_URL || 'https://habitchain.onrender.com/api',
+  apiUrl: process.env.REACT_APP_API_URL || 'http://localhost:8080/api',
   
   // Environment
   environment: process.env.REACT_APP_ENV || 'development',
@@ -17,7 +17,7 @@ export const config = {
   appVersion: '1.0.0',
   
   // Timeouts
-  apiTimeout: 60000, // 60 seconds - increased to handle slow registration and database operations
+  apiTimeout: 15000, // 15 seconds - optimized balance of speed and reliability
   tokenRefreshThreshold: 5 * 60 * 1000, // 5 minutes
   
   // Pagination
