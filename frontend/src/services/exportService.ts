@@ -9,7 +9,7 @@ interface ExportData {
 }
 
 interface ExportOptions {
-  format: 'csv' | 'pdf';
+  format: 'csv';
   dateRange: 'all' | 'month' | 'week' | 'custom';
   startDate?: string;
   endDate?: string;
@@ -149,46 +149,6 @@ class ExportService {
   }
 
   /**
-   * Export data as PDF using backend endpoint
-   */
-  async exportPDF(userId: string, options: ExportOptions, data: ExportData): Promise<void> {
-    try {
-      // Convert frontend options to backend format
-      const exportOptions = this.convertToBackendOptions(options);
-      
-      // Make request to backend export endpoint
-      const response = await fetch(`${getApiUrl()}/export/pdf`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        },
-        body: JSON.stringify(exportOptions)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Export failed' }));
-        throw new Error(errorData.message || 'Failed to export PDF');
-      }
-
-      // Get the PDF data as blob
-      const blob = await response.blob();
-      
-      // Extract filename from response headers or use default
-      const contentDisposition = response.headers.get('Content-Disposition');
-      const filename = this.extractFilename(contentDisposition) || `habitchain-export-${new Date().toISOString().split('T')[0]}.pdf`;
-
-      // Download the file
-      this.downloadBlob(blob, filename);
-    } catch (error) {
-      console.error('Error exporting PDF:', error);
-      // If PDF export fails, we can fall back to CSV
-      console.warn('PDF export failed, falling back to CSV');
-      await this.exportCSV(userId, options, data);
-    }
-  }
-
-  /**
    * Get export preview from backend
    */
   async getExportPreview(userId: string, options: ExportOptions): Promise<any> {
@@ -233,18 +193,6 @@ class ExportService {
               'Easy data manipulation',
               'Lightweight file size'
             ]
-          },
-          {
-            format: 'PDF',
-            description: 'Formatted document for sharing and printing',
-            mimeType: 'application/pdf',
-            extension: '.pdf',
-            features: [
-              'Professional formatting',
-              'Charts and visualizations',
-              'Print-ready layout',
-              'Universal compatibility'
-            ]
           }
         ]
       };
@@ -256,7 +204,7 @@ class ExportService {
    */
   private convertToBackendOptions(options: ExportOptions): any {
     return {
-      format: options.format.toUpperCase(),
+      format: 'CSV',
       dateRange: options.dateRange,
       startDate: options.startDate || null,
       endDate: options.endDate || null,

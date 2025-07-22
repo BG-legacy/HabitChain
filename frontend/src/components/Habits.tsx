@@ -19,7 +19,7 @@ interface Habit {
   totalCheckIns: number;
   createdAt: string;
   isActive: boolean;
-  lastCheckIn?: string;
+  lastCompletedAt?: string;
 }
 
 interface HabitFormData {

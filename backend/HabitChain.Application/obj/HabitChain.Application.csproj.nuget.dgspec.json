@@ -59,6 +59,10 @@
             "OpenAI": {
               "target": "Package",
               "version": "[2.0.0, )"
+            },
+            "QuestPDF": {
+              "target": "Package",
+              "version": "[2024.12.4, )"
             }
           },
           "imports": [

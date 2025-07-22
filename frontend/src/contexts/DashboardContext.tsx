@@ -12,7 +12,7 @@ interface Habit {
   nextCheckIn: string;
   isActive: boolean;
   totalCheckIns: number;
-  lastCheckIn?: string;
+  lastCompletedAt?: string;
 }
 
 interface DashboardStats {
@@ -80,7 +80,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
     // Calculate completion rate based on habits completed today
     const today = new Date().toDateString();
     const recentlyCompletedHabits = habitsData.filter(h => 
-      h.lastCheckIn && new Date(h.lastCheckIn).toDateString() === today
+              h.lastCompletedAt && new Date(h.lastCompletedAt).toDateString() === today
     ).length;
     
     // Calculate completion rate as percentage of active habits completed today
@@ -186,7 +186,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
               currentStreak: newStreak,
               longestStreak: Math.max(habit.longestStreak, newStreak),
               totalCheckIns: (habit.totalCheckIns || 0) + 1,
-              lastCheckIn: completedAt
+              lastCompletedAt: completedAt
             }
           : habit
       );
@@ -206,7 +206,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
               currentStreak: newStreak,
               longestStreak: Math.max(habit.longestStreak, newStreak),
               totalCheckIns: (habit.totalCheckIns || 0) + 1,
-              lastCheckIn: completedAt
+              lastCompletedAt: completedAt
             }
           : habit
       );

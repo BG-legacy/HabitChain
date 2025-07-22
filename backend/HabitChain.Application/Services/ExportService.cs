@@ -2,6 +2,11 @@ using AutoMapper;
 using HabitChain.Application.DTOs;
 using HabitChain.Application.Interfaces;
 using System.Text;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using QuestPDF.Drawing;
+using QuestPDF.Elements;
 
 namespace HabitChain.Application.Services;
 
@@ -188,13 +193,10 @@ public class ExportService : IExportService
     }
 
     /// <summary>
-    /// Generates PDF data for user export (basic implementation)
+    /// Generates PDF data for user export using QuestPDF
     /// </summary>
     public async Task<byte[]> GeneratePDFAsync(string userId, ExportOptionsDto options)
     {
-        // For now, we'll generate a simple text-based PDF
-        // In a production environment, you would use a library like iTextSharp or QuestPDF
-        
         // Validate options
         if (!options.IsValid(out string validationError))
         {
@@ -204,56 +206,204 @@ public class ExportService : IExportService
         // Get user data
         var data = await GetUserExportDataAsync(userId, options);
 
-        // Generate a simple text report
-        var report = new StringBuilder();
-        report.AppendLine("HABITCHAIN EXPORT REPORT");
-        report.AppendLine("========================");
-        report.AppendLine();
-        report.AppendLine($"Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss UTC}");
-        report.AppendLine($"User ID: {userId}");
-        report.AppendLine($"Date Range: {options.DateRange}");
-        report.AppendLine();
-
-        // Summary
-        report.AppendLine("SUMMARY");
-        report.AppendLine("-------");
-        report.AppendLine($"Total Habits: {data.Statistics.TotalHabits}");
-        report.AppendLine($"Active Habits: {data.Statistics.ActiveHabits}");
-        report.AppendLine($"Total Check-ins: {data.Statistics.TotalCheckIns}");
-        report.AppendLine($"Total Badges: {data.Statistics.TotalBadges}");
-        report.AppendLine($"Longest Streak: {data.Statistics.LongestStreak} days");
-        report.AppendLine($"30-Day Completion Rate: {data.Statistics.CompletionRate30Days:F2}%");
-        report.AppendLine();
-
-        // Habits
-        if (options.IncludeHabits && data.Habits.Any())
+        // Generate PDF using QuestPDF
+        var document = Document.Create(container =>
         {
-            report.AppendLine("HABITS");
-            report.AppendLine("------");
-            foreach (var habit in data.Habits)
+            container.Page(page =>
             {
-                report.AppendLine($"• {habit.Name}");
-                report.AppendLine($"  Description: {habit.Description ?? "N/A"}");
-                report.AppendLine($"  Frequency: {habit.Frequency}");
-                report.AppendLine($"  Current Streak: {habit.CurrentStreak} days");
-                report.AppendLine($"  Longest Streak: {habit.LongestStreak} days");
-                report.AppendLine($"  Status: {(habit.IsActive ? "Active" : "Inactive")}");
-                report.AppendLine();
-            }
-        }
+                page.Size(PageSizes.A4);
+                page.Margin(2, Unit.Centimetre);
+                page.DefaultTextStyle(x => x.FontSize(10));
 
-        // For now, return the text as bytes
-        // In production, you would generate an actual PDF
-        var textBytes = Encoding.UTF8.GetBytes(report.ToString());
+                page.Header().Element(ComposeHeader);
+                page.Content().Element(container => ComposeContent(container, data, options));
+                page.Footer().AlignCenter().Text(x =>
+                {
+                    x.CurrentPageNumber();
+                    x.Span(" / ");
+                    x.TotalPages();
+                });
+            });
+        });
+
+        return document.GeneratePdf();
+    }
+
+    private void ComposeHeader(IContainer container)
+    {
+        container.Row(row =>
+        {
+            row.RelativeItem().Column(column =>
+            {
+                column.Item().Text("HABITCHAIN EXPORT REPORT").FontSize(20).Bold();
+                column.Item().Text($"Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss UTC}").FontSize(10).FontColor(Colors.Grey.Medium);
+            });
+
+            row.ConstantItem(50).Height(50).Background(Colors.Blue.Lighten1).AlignCenter().AlignMiddle().Text("📊").FontSize(24);
+        });
+    }
+
+    private void ComposeContent(IContainer container, ExportDataDto data, ExportOptionsDto options)
+    {
+        container.Column(column =>
+        {
+            // Summary Section
+            column.Item().Element(container => ComposeSummarySection(container, data));
+
+            // Habits Section
+            if (options.IncludeHabits && data.Habits.Any())
+            {
+                column.Item().Element(container => ComposeHabitsSection(container, data.Habits));
+            }
+
+            // Check-ins Section
+            if (options.IncludeCheckIns && data.CheckIns.Any())
+            {
+                column.Item().Element(container => ComposeCheckInsSection(container, data.CheckIns));
+            }
+
+            // Badges Section
+            if (options.IncludeBadges && data.Badges.Any())
+            {
+                column.Item().Element(container => ComposeBadgesSection(container, data.Badges));
+            }
+
+            // Encouragements Section
+            if (options.IncludeEncouragements && data.Encouragements.Any())
+            {
+                column.Item().Element(container => ComposeEncouragementsSection(container, data.Encouragements));
+            }
+        });
+    }
+
+    private void ComposeSummarySection(IContainer container, ExportDataDto data)
+    {
+        var stats = data.Statistics;
         
-        // Placeholder for actual PDF generation
-        // This would typically involve using a PDF library like:
-        // - iTextSharp/iText 7
-        // - QuestPDF
-        // - PdfSharpCore
-        // - etc.
-        
-        return textBytes;
+        container.Column(column =>
+        {
+            column.Item().Text("SUMMARY STATISTICS").FontSize(16).Bold().FontColor(Colors.Blue.Medium);
+            column.Item().Height(10);
+            
+            column.Item().Grid(grid =>
+            {
+                grid.Columns(2);
+                grid.Item().Text("Total Habits:").Bold();
+                grid.Item().Text(stats.TotalHabits.ToString());
+                
+                grid.Item().Text("Active Habits:").Bold();
+                grid.Item().Text(stats.ActiveHabits.ToString());
+                
+                grid.Item().Text("Total Check-ins:").Bold();
+                grid.Item().Text(stats.TotalCheckIns.ToString());
+                
+                grid.Item().Text("Total Badges:").Bold();
+                grid.Item().Text(stats.TotalBadges.ToString());
+                
+                grid.Item().Text("Longest Streak:").Bold();
+                grid.Item().Text($"{stats.LongestStreak} days");
+                
+                grid.Item().Text("30-Day Completion Rate:").Bold();
+                grid.Item().Text($"{stats.CompletionRate30Days:F1}%");
+            });
+            
+            column.Item().Height(20);
+        });
+    }
+
+    private void ComposeHabitsSection(IContainer container, IEnumerable<HabitDto> habits)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("HABITS").FontSize(16).Bold().FontColor(Colors.Blue.Medium);
+            column.Item().Height(10);
+            
+            foreach (var habit in habits)
+            {
+                column.Item().Background(Colors.Grey.Lighten3).Padding(10).Column(habitColumn =>
+                {
+                    habitColumn.Item().Text(habit.Name).FontSize(12).Bold();
+                    habitColumn.Item().Text($"Description: {habit.Description ?? "N/A"}").FontSize(9);
+                    habitColumn.Item().Text($"Frequency: {habit.Frequency}").FontSize(9);
+                    habitColumn.Item().Text($"Current Streak: {habit.CurrentStreak} days").FontSize(9);
+                    habitColumn.Item().Text($"Longest Streak: {habit.LongestStreak} days").FontSize(9);
+                    habitColumn.Item().Text($"Status: {(habit.IsActive ? "Active" : "Inactive")}").FontSize(9);
+                });
+                column.Item().Height(5);
+            }
+        });
+    }
+
+    private void ComposeCheckInsSection(IContainer container, IEnumerable<CheckInDto> checkIns)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("RECENT CHECK-INS").FontSize(16).Bold().FontColor(Colors.Blue.Medium);
+            column.Item().Height(10);
+            
+            column.Item().Table(table =>
+            {
+                table.Header(header =>
+                {
+                    header.Cell().Text("Date").Bold();
+                    header.Cell().Text("Habit").Bold();
+                    header.Cell().Text("Notes").Bold();
+                });
+
+                foreach (var checkIn in checkIns.Take(50)) // Limit to 50 most recent
+                {
+                    table.Cell().Text(checkIn.CompletedAt.ToString("yyyy-MM-dd"));
+                    table.Cell().Text(checkIn.Habit.Name);
+                    table.Cell().Text(checkIn.Notes ?? "");
+                }
+            });
+        });
+    }
+
+    private void ComposeBadgesSection(IContainer container, IEnumerable<UserBadgeDto> userBadges)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("EARNED BADGES").FontSize(16).Bold().FontColor(Colors.Blue.Medium);
+            column.Item().Height(10);
+            
+            column.Item().Grid(grid =>
+            {
+                grid.Columns(3);
+                
+                foreach (var userBadge in userBadges)
+                {
+                    var badge = userBadge.Badge;
+                    grid.Item().Background(Colors.Grey.Lighten3).Padding(8).Column(badgeColumn =>
+                    {
+                        badgeColumn.Item().Text(badge.Emoji).FontSize(16);
+                        badgeColumn.Item().Text(badge.Name).FontSize(10).Bold();
+                        badgeColumn.Item().Text(badge.Description).FontSize(8);
+                        badgeColumn.Item().Text($"Earned: {userBadge.EarnedAt.ToString("yyyy-MM-dd")}").FontSize(8);
+                    });
+                }
+            });
+        });
+    }
+
+    private void ComposeEncouragementsSection(IContainer container, IEnumerable<EncouragementDto> encouragements)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("ENCOURAGEMENTS").FontSize(16).Bold().FontColor(Colors.Blue.Medium);
+            column.Item().Height(10);
+            
+            foreach (var encouragement in encouragements)
+            {
+                column.Item().Background(Colors.Grey.Lighten3).Padding(10).Column(encouragementColumn =>
+                {
+                    encouragementColumn.Item().Text(encouragement.Message).FontSize(10);
+                    encouragementColumn.Item().Text($"Type: {encouragement.Type}").FontSize(8);
+                    encouragementColumn.Item().Text($"Created: {encouragement.CreatedAt:yyyy-MM-dd}").FontSize(8);
+                });
+                column.Item().Height(5);
+            }
+        });
     }
 
     /// <summary>

@@ -14,7 +14,7 @@ interface Habit {
   targetDays?: number;
   currentStreak: number;
   longestStreak: number;
-  lastCheckIn?: string;
+  lastCompletedAt?: string;
   totalCheckIns?: number;
 }
 
@@ -164,7 +164,7 @@ const CheckIn: React.FC = () => {
                   currentStreak: actualStreak,
                   longestStreak: Math.max(habit.longestStreak, actualStreak),
                   totalCheckIns: (habit.totalCheckIns || 0) + 1,
-                  lastCheckIn: createdCheckIn.completedAt
+                  lastCompletedAt: createdCheckIn.completedAt
                 }
               : habit
           )
@@ -229,8 +229,8 @@ const CheckIn: React.FC = () => {
   };
 
   const getLastCheckInDate = (habit: Habit) => {
-    if (!habit.lastCheckIn) return 'Never';
-    return new Date(habit.lastCheckIn).toLocaleDateString('en-US', {
+    if (!habit.lastCompletedAt) return 'Never';
+    return new Date(habit.lastCompletedAt).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',

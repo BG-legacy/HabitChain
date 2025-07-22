@@ -245,18 +245,30 @@
   color: var(--color-white) !important;
 }
 
+/* Specific rule for the notes textarea */
+.form-group textarea[name="notes"] {
+  color: var(--color-white) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 2px solid var(--glass-border) !important;
+}
+
+.form-group textarea[name="notes"]::placeholder {
+  color: var(--color-white) !important;
+  opacity: 0.7;
+}
+
 .form-group input,
 .form-group textarea,
 .form-group select {
   width: 100%;
   padding: 12px;
-  border: 2px solid var(--glassmorphism-border);
+  border: 2px solid var(--glass-border);
   border-radius: 8px;
   font-size: 1rem;
   color: var(--color-white);
-  background: var(--glassmorphism-bg);
-  backdrop-filter: var(--glassmorphism-blur);
-  transition: border-color var(--transition-duration) ease;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  transition: border-color var(--transition-normal) ease;
   box-sizing: border-box;
 }
 
@@ -270,13 +282,15 @@
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: var(--glassmorphism-shadow-hover);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
 }
 
 .form-group textarea {
   resize: vertical;
   min-height: 100px;
+  color: var(--color-white) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Custom Checkbox */
