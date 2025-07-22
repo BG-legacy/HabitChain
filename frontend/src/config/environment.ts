@@ -32,12 +32,18 @@ export const isLocalhost = (): boolean => {
 };
 
 export const getApiUrl = (): string => {
-  // In development, if running on localhost, use the local API for development
-  if (isLocalhost() && config.isDevelopment) {
+  // If a specific API URL is set via environment variable, use it
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // In production or when deployed, use the production API
+  if (config.isProduction || !isLocalhost()) {
     return 'https://habitchain.onrender.com/api';
   }
   
-  return config.apiUrl;
+  // For local development, also use production API (since local backend might not be running)
+  return 'https://habitchain.onrender.com/api';
 };
 
 export default config; 

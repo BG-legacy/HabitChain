@@ -115,41 +115,6 @@ const Login: React.FC = () => {
           <p>Sign in to your HabitChain account</p>
         </div>
 
-        {/* Quick test button for debugging */}
-        <div style={{ marginBottom: '1rem', padding: '0.5rem', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
-          <button 
-            type="button"
-            onClick={async () => {
-              try {
-                console.log('🧪 Testing API connection...');
-                const response = await fetch('https://habitchain.onrender.com/api/auth/login', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ email: 'test@example.com', password: 'TestPassword123!' })
-                });
-                console.log('📡 API Response Status:', response.status);
-                const data = await response.json();
-                console.log('📦 API Response Data:', data);
-                alert(`API Test: ${response.status} - Check console for details`);
-              } catch (error) {
-                console.error('🚫 API Test Error:', error);
-                alert('API Test Failed - Check console for details');
-              }
-            }}
-            style={{ 
-              padding: '8px 16px', 
-              backgroundColor: '#6366f1', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px', 
-              cursor: 'pointer',
-              fontSize: '12px'
-            }}
-          >
-            🧪 Test API Connection
-          </button>
-        </div>
-
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="email">Email</label>
