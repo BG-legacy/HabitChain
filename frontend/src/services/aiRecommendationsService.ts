@@ -17,21 +17,18 @@ export interface HabitRecommendation {
 export interface HabitSummary {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   frequency: string;
   currentStreak: number;
-  longestStreak: number;
   totalCheckIns: number;
-  createdAt: string;
   isActive: boolean;
-  category: string;
 }
 
 export interface CheckInSummary {
+  id: string;
   habitId: string;
   habitName: string;
   completedAt: string;
-  notes?: string;
   streakDay: number;
 }
 
@@ -71,6 +68,17 @@ export class AiRecommendationsService {
       return response.data;
     } catch (error) {
       console.error('Error fetching habit recommendations:', error);
+      throw error;
+    }
+  }
+
+  // Create a habit from an AI recommendation
+  static async createHabitFromRecommendation(recommendation: HabitRecommendation): Promise<any> {
+    try {
+      const response = await ApiService.post<ApiResponse<any>>('/ai-recommendations/create-habit', recommendation);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating habit from recommendation:', error);
       throw error;
     }
   }

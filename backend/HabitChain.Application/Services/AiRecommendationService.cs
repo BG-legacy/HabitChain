@@ -3,6 +3,7 @@ using HabitChain.Application.DTOs;
 using HabitChain.Application.Interfaces;
 using HabitChain.Domain.Entities;
 using HabitChain.Domain.Interfaces;
+using HabitChain.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using OpenAI;
 using OpenAI.Chat;
@@ -161,6 +162,76 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
 
         var recommendations = await GenerateRecommendationsAsync(prompt);
         return recommendations;
+    }
+
+    public async Task<HabitDto> CreateHabitFromRecommendationAsync(string userId, HabitRecommendationDto recommendation)
+    {
+        // Convert recommendation to CreateHabitDto
+        var createHabitDto = new CreateHabitDto
+        {
+            Name = recommendation.Name,
+            Description = recommendation.Description,
+            UserId = userId,
+            Frequency = ConvertFrequencyStringToEnum(recommendation.Frequency),
+            Color = GetColorForCategory(recommendation.Category),
+            IconName = GetIconForCategory(recommendation.Category)
+        };
+
+        // Create the habit using the existing habit service
+        var habit = _mapper.Map<Habit>(createHabitDto);
+        habit.Id = Guid.NewGuid();
+        habit.IsActive = true;
+        habit.CurrentStreak = 0;
+        habit.LongestStreak = 0;
+        habit.TargetDays = recommendation.TargetDays;
+        
+        var createdHabit = await _habitRepository.AddAsync(habit);
+        
+        return _mapper.Map<HabitDto>(createdHabit);
+    }
+
+    private HabitFrequency ConvertFrequencyStringToEnum(string frequency)
+    {
+        return frequency.ToLower() switch
+        {
+            "daily" => HabitFrequency.Daily,
+            "weekly" => HabitFrequency.Weekly,
+            "monthly" => HabitFrequency.Monthly,
+            "custom" => HabitFrequency.Custom,
+            _ => HabitFrequency.Daily
+        };
+    }
+
+    private string GetColorForCategory(string category)
+    {
+        return category.ToLower() switch
+        {
+            "fitness" => "#FF6B6B",
+            "health" => "#4ECDC4",
+            "learning" => "#45B7D1",
+            "wellness" => "#96CEB4",
+            "sleep" => "#FFEAA7",
+            "reflection" => "#DDA0DD",
+            "organization" => "#98D8C8",
+            "productivity" => "#F7DC6F",
+            _ => "#667eea"
+        };
+    }
+
+    private string GetIconForCategory(string category)
+    {
+        return category.ToLower() switch
+        {
+            "fitness" => "dumbbell",
+            "health" => "heart",
+            "learning" => "book",
+            "wellness" => "leaf",
+            "sleep" => "moon",
+            "reflection" => "brain",
+            "organization" => "clipboard",
+            "productivity" => "zap",
+            _ => "target"
+        };
     }
 
     private async Task<List<HabitRecommendationDto>> GetStarterHabitsAsync()

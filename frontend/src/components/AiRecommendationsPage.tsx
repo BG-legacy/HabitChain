@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageTransition } from './AnimatedComponents';
 import AiRecommendationsModal from './AiRecommendations';
 import AiRecommendationsService, { HabitRecommendation, UserHabitAnalysis } from '../services/aiRecommendationsService';
 import { useToast } from '../hooks/useToast';
+import { useDashboard } from '../contexts/DashboardContext';
 import './AiRecommendationsPage.css';
 
 const AiRecommendationsPage: React.FC = () => {
@@ -11,6 +13,8 @@ const AiRecommendationsPage: React.FC = () => {
   const [motivation, setMotivation] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const { showSuccess, showError } = useToast();
+  const { refreshDashboard } = useDashboard();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadAiData();
@@ -35,10 +39,22 @@ const AiRecommendationsPage: React.FC = () => {
     }
   };
 
-  const handleHabitSelect = (recommendation: HabitRecommendation) => {
-    // Here you would typically integrate with your habit creation flow
-    showSuccess(`Great choice! "${recommendation.name}" would be an excellent addition to your routine.`);
-    // You could redirect to habit creation or show a success message
+  const handleHabitSelect = async (recommendation: HabitRecommendation) => {
+    try {
+      // Refresh the dashboard to show the new habit
+      await refreshDashboard();
+      
+      // Show success message
+      showSuccess(`Great choice! "${recommendation.name}" has been added to your habits.`);
+      
+      // Optionally navigate to habits page to see the new habit
+      setTimeout(() => {
+        navigate('/habits');
+      }, 1500);
+    } catch (error) {
+      console.error('Error refreshing dashboard:', error);
+      showError('Habit created but failed to refresh dashboard. Please refresh the page.');
+    }
   };
 
   const getPatternInsights = () => {

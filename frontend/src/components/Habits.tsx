@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useDashboard } from '../contexts/DashboardContext';
 import { ApiService } from '../services/api';
-import CompleteHabitButton from './CompleteHabitButton';
-import CheckInButton from './CheckInButton';
-import './Habits.css';
 import HabitCard from './HabitCard';
+import AiRecommendationsModal from './AiRecommendations';
+import { HabitRecommendation } from '../services/aiRecommendationsService';
+import './Habits.css';
 
 interface Habit {
   id: string;
@@ -16,10 +16,19 @@ interface Habit {
   targetDays: number;
   currentStreak: number;
   longestStreak: number;
-  totalCheckIns: number;
-  createdAt: string;
+  totalCompletions: number;
+  completionRate: number;
+  weeklyCompletionRate: number;
+  monthlyCompletionRate: number;
+  totalPossibleCompletions: number;
+  totalActualCompletions: number;
   isActive: boolean;
-  lastCompletedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  category?: string;
+  reminderTime?: string;
+  color?: string;
+  icon?: string;
 }
 
 interface HabitFormData {
@@ -37,6 +46,7 @@ const Habits: React.FC = () => {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showAiRecommendations, setShowAiRecommendations] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [formData, setFormData] = useState<HabitFormData>({
     name: '',
@@ -191,7 +201,7 @@ const Habits: React.FC = () => {
         // Don't include targetDays as it's not part of CreateHabitDto
       };
 
-      console.log('Submitting habit data:', habitData); // Debug log
+      console.log('Submitting habit data:', habitData);
 
       if (editingHabit) {
         // Update existing habit
@@ -283,6 +293,18 @@ const Habits: React.FC = () => {
     }
   };
 
+  const handleHabitSelect = async (recommendation: HabitRecommendation) => {
+    try {
+      // Refresh the habits list to show the new habit
+      await fetchHabits();
+      
+      // Refresh the dashboard to update the dashboard state
+      await refreshDashboard();
+    } catch (error) {
+      console.error('Error refreshing habits:', error);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -308,12 +330,20 @@ const Habits: React.FC = () => {
     <div className="habits">
       <div className="habits-header">
         <h1>My Habits</h1>
-        <button 
-          className="btn-primary"
-          onClick={() => setShowForm(true)}
-        >
-          ➕ Add New Habit
-        </button>
+        <div className="habits-actions">
+          <button 
+            className="btn-secondary"
+            onClick={() => setShowAiRecommendations(true)}
+          >
+            🤖 AI Recommendations
+          </button>
+          <button 
+            className="btn-primary"
+            onClick={() => setShowForm(true)}
+          >
+            ➕ Add New Habit
+          </button>
+        </div>
       </div>
 
       {/* Habit Form */}
@@ -406,12 +436,20 @@ const Habits: React.FC = () => {
           <div className="empty-icon">🎯</div>
           <h3>No habits yet</h3>
           <p>Start building your habit chain by creating your first habit!</p>
-          <button 
-            className="btn-primary"
-            onClick={() => setShowForm(true)}
-          >
-            Create First Habit
-          </button>
+          <div className="empty-actions">
+            <button 
+              className="btn-primary"
+              onClick={() => setShowAiRecommendations(true)}
+            >
+              🤖 Get AI Recommendations
+            </button>
+            <button 
+              className="btn-secondary"
+              onClick={() => setShowForm(true)}
+            >
+              Create First Habit
+            </button>
+          </div>
         </div>
       ) : (
         <div className="habits-grid">
@@ -422,6 +460,7 @@ const Habits: React.FC = () => {
                 ...habit,
                 targetDays: habit.targetDays ?? 1,
                 createdAt: habit.createdAt || new Date().toISOString(),
+                totalCheckIns: habit.totalCompletions || 0, // Map totalCompletions to totalCheckIns
               }}
               onToggleActive={handleToggleActive}
               onDelete={handleDelete}
@@ -440,6 +479,13 @@ const Habits: React.FC = () => {
           ))}
         </div>
       )}
+
+      {/* AI Recommendations Modal */}
+      <AiRecommendationsModal
+        isOpen={showAiRecommendations}
+        onClose={() => setShowAiRecommendations(false)}
+        onHabitSelect={handleHabitSelect}
+      />
     </div>
   );
 };

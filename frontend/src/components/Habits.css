@@ -45,13 +45,18 @@
   -webkit-text-fill-color: transparent;
 }
 
-.habits-header .btn-primary {
+.habits-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.habits-header .btn-primary,
+.habits-header .btn-secondary {
   padding: 12px 24px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -61,9 +66,26 @@
   gap: 8px;
 }
 
+.habits-header .btn-primary {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+.habits-header .btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .habits-header .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+}
+
+.habits-header .btn-secondary:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
 /* Habit Form Overlay */
@@ -456,6 +478,54 @@
 .btn-view:hover {
   background: #e9ecef;
   transform: translateY(-1px);
+}
+
+/* Empty state actions */
+.empty-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.empty-actions .btn-primary,
+.empty-actions .btn-secondary {
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.empty-actions .btn-primary {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+.empty-actions .btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.empty-actions .btn-primary:hover,
+.empty-actions .btn-secondary:hover {
+  transform: translateY(-2px);
+}
+
+.empty-actions .btn-primary:hover {
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+}
+
+.empty-actions .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
 /* Responsive Design */

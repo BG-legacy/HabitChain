@@ -20,7 +20,8 @@ const AiRecommendations: React.FC<AiRecommendationsProps> = ({
   const [recommendations, setRecommendations] = useState<HabitRecommendation[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedRecommendation, setSelectedRecommendation] = useState<HabitRecommendation | null>(null);
-  const { showError } = useToast();
+  const [creatingHabit, setCreatingHabit] = useState(false);
+  const { showError, showSuccess } = useToast();
 
   useEffect(() => {
     if (isOpen) {
@@ -52,10 +53,27 @@ const AiRecommendations: React.FC<AiRecommendationsProps> = ({
     setSelectedRecommendation(recommendation);
   };
 
-  const handleCreateHabit = () => {
-    if (selectedRecommendation && onHabitSelect) {
-      onHabitSelect(selectedRecommendation);
+  const handleCreateHabit = async () => {
+    if (!selectedRecommendation) return;
+
+    setCreatingHabit(true);
+    try {
+      // Create the habit from the recommendation
+      const createdHabit = await AiRecommendationsService.createHabitFromRecommendation(selectedRecommendation);
+      
+      showSuccess(`🎉 "${selectedRecommendation.name}" has been added to your habits!`);
+      
+      // Call the onHabitSelect callback if provided
+      if (onHabitSelect) {
+        onHabitSelect(selectedRecommendation);
+      }
+      
       onClose();
+    } catch (error) {
+      console.error('Error creating habit:', error);
+      showError('Failed to create habit. Please try again.');
+    } finally {
+      setCreatingHabit(false);
     }
   };
 
@@ -196,8 +214,9 @@ const AiRecommendations: React.FC<AiRecommendationsProps> = ({
           <ModalActionButton 
             variant="primary" 
             onClick={handleCreateHabit}
+            disabled={creatingHabit}
           >
-            Add This Habit
+            {creatingHabit ? 'Creating Habit...' : 'Add This Habit'}
           </ModalActionButton>
         )}
       </ModalFooter>

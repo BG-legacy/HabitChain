@@ -48,6 +48,40 @@ public class AiRecommendationsController : ControllerBase
     }
 
     /// <summary>
+    /// Create a new habit from an AI recommendation
+    /// </summary>
+    [HttpPost("create-habit")]
+    public async Task<ActionResult<HabitDto>> CreateHabitFromRecommendation([FromBody] HabitRecommendationDto recommendation)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userId = GetCurrentUserId();
+            var createdHabit = await _aiRecommendationService.CreateHabitFromRecommendationAsync(userId, recommendation);
+            
+            return Ok(new
+            {
+                success = true,
+                data = createdHabit,
+                message = $"Habit '{recommendation.Name}' created successfully from AI recommendation"
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                success = false,
+                message = "Error creating habit from recommendation",
+                error = ex.Message
+            });
+        }
+    }
+
+    /// <summary>
     /// Get detailed analysis of user's habit patterns and data
     /// </summary>
     [HttpGet("analysis")]
