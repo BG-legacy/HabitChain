@@ -51,7 +51,15 @@ const CalendarHeatmap: React.FC<CalendarHeatmapProps> = ({
     return 4;
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (date: Date) => {
+    // Use local date formatting instead of UTC to match the backend's date handling
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatDisplayDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -84,14 +92,14 @@ const CalendarHeatmap: React.FC<CalendarHeatmapProps> = ({
       const fillDate = new Date(currentDate);
       fillDate.setDate(fillDate.getDate() - (startDayOfWeek - i));
       currentWeek.push({
-        date: fillDate.toISOString().split('T')[0],
+        date: formatDate(fillDate),
         count: 0,
         level: 0
       });
     }
 
     while (currentDate <= end) {
-      const dateString = currentDate.toISOString().split('T')[0];
+      const dateString = formatDate(currentDate);
       const dayData = data.find(d => d.date === dateString);
       
       currentWeek.push({
@@ -113,7 +121,7 @@ const CalendarHeatmap: React.FC<CalendarHeatmapProps> = ({
       const fillDate = new Date(end);
       fillDate.setDate(fillDate.getDate() + (7 - currentWeek.length));
       currentWeek.push({
-        date: fillDate.toISOString().split('T')[0],
+        date: formatDate(fillDate),
         count: 0,
         level: 0
       });
@@ -211,11 +219,11 @@ const CalendarHeatmap: React.FC<CalendarHeatmapProps> = ({
                     className={`calendar-day level-${day.level} ${onDayClick ? 'clickable' : ''}`}
                     style={{ backgroundColor: getColorForLevel(day.level) }}
                     onClick={() => handleDayClick(day.date, day.count)}
-                    title={showTooltip ? `${formatDate(day.date)}: ${day.count} activities` : undefined}
+                    title={showTooltip ? `${formatDisplayDate(day.date)} activities` : undefined}
                   >
                     {showTooltip && (
                       <div className="day-tooltip">
-                        <div className="tooltip-date">{formatDate(day.date)}</div>
+                        <div className="tooltip-date">{formatDisplayDate(day.date)}</div>
                         <div className="tooltip-count">{day.count} activities</div>
                       </div>
                     )}
