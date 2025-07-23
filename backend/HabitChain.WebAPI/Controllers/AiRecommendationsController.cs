@@ -26,8 +26,17 @@ public class AiRecommendationsController : ControllerBase
     {
         try
         {
+            Console.WriteLine("🤖 AI Recommendations endpoint called");
             var userId = GetCurrentUserId();
+            Console.WriteLine($"🤖 User ID: {userId}");
+            
+            // Check if OpenAI key is available
+            var openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+            Console.WriteLine($"🤖 OpenAI Key available: {!string.IsNullOrEmpty(openAiKey)}");
+            Console.WriteLine($"🤖 OpenAI Key length: {openAiKey?.Length ?? 0}");
+            
             var recommendations = await _aiRecommendationService.GetHabitRecommendationsAsync(userId);
+            Console.WriteLine($"🤖 Generated {recommendations.Count} recommendations");
             
             return Ok(new
             {

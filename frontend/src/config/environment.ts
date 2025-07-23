@@ -17,7 +17,7 @@ export const config = {
   appVersion: '1.0.0',
   
   // Timeouts
-  apiTimeout: 15000, // 15 seconds - optimized balance of speed and reliability
+  apiTimeout: 30000, // 30 seconds - allow time for AI generation
   tokenRefreshThreshold: 5 * 60 * 1000, // 5 minutes
   
   // Pagination
@@ -37,12 +37,7 @@ export const getApiUrl = (): string => {
     return process.env.REACT_APP_API_URL;
   }
   
-  // In production or when deployed, use the production API
-  if (config.isProduction || !isLocalhost()) {
-    return 'https://habitchain.onrender.com/api';
-  }
-  
-  // For local development, also use production API (since local backend might not be running)
+  // Always use the production API on Render
   return 'https://habitchain.onrender.com/api';
 };
 

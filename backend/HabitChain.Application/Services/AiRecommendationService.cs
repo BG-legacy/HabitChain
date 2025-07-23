@@ -37,25 +37,36 @@ public class AiRecommendationService : IAiRecommendationService
         var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? 
                     _configuration["OpenAISettings:ApiKey"];
         
+        Console.WriteLine($"🤖 OpenAI API Key found: {!string.IsNullOrEmpty(apiKey)}");
+        Console.WriteLine($"🤖 API Key length: {apiKey?.Length ?? 0}");
+        
         if (!string.IsNullOrEmpty(apiKey))
         {
             _openAIClient = new OpenAIClient(apiKey);
+            Console.WriteLine("✅ OpenAI Client initialized successfully");
         }
         else
         {
             _openAIClient = null;
+            Console.WriteLine("❌ OpenAI Client not initialized - no API key found");
         }
     }
 
     public async Task<List<HabitRecommendationDto>> GetHabitRecommendationsAsync(string userId)
     {
+        Console.WriteLine($"🤖 GetHabitRecommendationsAsync called for user: {userId}");
         var userAnalysis = await GetUserHabitAnalysisAsync(userId);
+        Console.WriteLine($"🤖 User has {userAnalysis.CurrentHabits.Count} habits");
         
         if (!userAnalysis.CurrentHabits.Any())
         {
-            return await GetStarterHabitsAsync();
+            Console.WriteLine("🤖 No habits found, calling GetStarterHabitsAsync");
+            var starterHabits = await GetStarterHabitsAsync();
+            Console.WriteLine($"🤖 GetStarterHabitsAsync returned {starterHabits.Count} habits");
+            return starterHabits;
         }
 
+        Console.WriteLine("🤖 User has habits, generating personalized recommendations");
         var prompt = BuildRecommendationPrompt(userAnalysis);
         var recommendations = await GenerateRecommendationsAsync(prompt);
         
@@ -97,7 +108,7 @@ public class AiRecommendationService : IAiRecommendationService
         
         if (_openAIClient == null)
         {
-            return GetFallbackMotivation(userAnalysis);
+            return "OpenAI is not configured. Please set up your API key to get personalized motivation.";
         }
         
         var prompt = $@"
@@ -125,12 +136,12 @@ Make it personal, encouraging, and actionable. Focus on their progress and poten
                     MaxOutputTokenCount = int.Parse(maxTokens)
                 });
 
-            return response.Value.Content[0].Text ?? GetFallbackMotivation(userAnalysis);
+            return response.Value.Content[0].Text ?? "Unable to generate motivation at this time.";
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error generating AI motivation: {ex.Message}");
-            return GetFallbackMotivation(userAnalysis);
+            return "Unable to generate motivation at this time. Please try again later.";
         }
     }
 
@@ -261,6 +272,15 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
 
     private async Task<List<HabitRecommendationDto>> GetStarterHabitsAsync()
     {
+        Console.WriteLine($"🤖 GetStarterHabitsAsync: OpenAI client is null: {_openAIClient == null}");
+        
+        if (_openAIClient == null)
+        {
+            Console.WriteLine("🤖 OpenAI client is null, returning empty list");
+            return new List<HabitRecommendationDto>(); // Return empty list when OpenAI not configured
+        }
+
+        Console.WriteLine("🤖 OpenAI client available, generating starter habits");
         var prompt = @"
 Suggest 5-7 beginner-friendly habits for someone just starting their habit journey. 
 Provide a VARIED mix that covers different life areas:
@@ -346,7 +366,7 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
     {
         if (_openAIClient == null)
         {
-            return new List<HabitRecommendationDto>(); // Return empty list instead of fallbacks
+            return new List<HabitRecommendationDto>(); // Return empty list when OpenAI not configured
         }
         
         try
@@ -355,6 +375,10 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
                        _configuration["OpenAISettings:Model"] ?? "gpt-4o-mini";
             var maxTokens = Environment.GetEnvironmentVariable("OPENAI_MAX_TOKENS") ?? 
                            _configuration["OpenAISettings:MaxTokens"] ?? "1000";
+            
+            Console.WriteLine($"🤖 Making OpenAI API call with model: {model}, maxTokens: {maxTokens}");
+            Console.WriteLine($"🤖 Prompt length: {prompt.Length} characters");
+            
             var response = await _openAIClient.GetChatClient(model).CompleteChatAsync(
                 new[] { new UserChatMessage(prompt) },
                 new ChatCompletionOptions
@@ -362,32 +386,54 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
                     MaxOutputTokenCount = int.Parse(maxTokens)
                 });
 
+            Console.WriteLine($"🤖 OpenAI API call completed successfully");
             var content = response.Value.Content[0].Text ?? string.Empty;
+            Console.WriteLine($"🤖 OpenAI response length: {content.Length} characters");
+            Console.WriteLine($"🤖 OpenAI response preview: {content.Substring(0, Math.Min(200, content.Length))}...");
+            
             if (string.IsNullOrEmpty(content))
             {
+                Console.WriteLine("🤖 OpenAI returned empty content");
                 return new List<HabitRecommendationDto>(); // Return empty list instead of fallbacks
             }
 
             // Try to parse JSON response
             try
             {
-                var recommendations = JsonSerializer.Deserialize<List<HabitRecommendationDto>>(content, new JsonSerializerOptions
+                Console.WriteLine("🤖 Attempting to parse JSON response");
+                
+                // Remove markdown code block wrapper if present
+                var jsonContent = content;
+                if (content.StartsWith("```json"))
+                {
+                    jsonContent = content.Replace("```json", "").Replace("```", "").Trim();
+                    Console.WriteLine("🤖 Removed markdown wrapper from response");
+                }
+                else if (content.StartsWith("```"))
+                {
+                    jsonContent = content.Replace("```", "").Trim();
+                    Console.WriteLine("🤖 Removed markdown wrapper from response");
+                }
+                
+                var recommendations = JsonSerializer.Deserialize<List<HabitRecommendationDto>>(jsonContent, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
                 
+                Console.WriteLine($"🤖 Successfully parsed {recommendations?.Count ?? 0} recommendations");
                 return recommendations ?? new List<HabitRecommendationDto>(); // Return empty list instead of fallbacks
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
-                // If JSON parsing fails, return empty list
+                Console.WriteLine($"🤖 JSON parsing failed: {ex.Message}");
+                Console.WriteLine($"🤖 Raw response: {content}");
                 return new List<HabitRecommendationDto>();
             }
         }
         catch (Exception ex)
         {
-            // Log the error (in a real application, use proper logging)
-            Console.WriteLine($"Error generating AI recommendations: {ex.Message}");
+            Console.WriteLine($"🤖 Error generating AI recommendations: {ex.Message}");
+            Console.WriteLine($"🤖 Exception details: {ex}");
             return new List<HabitRecommendationDto>(); // Return empty list instead of fallbacks
         }
     }
@@ -540,27 +586,5 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
         return "General";
     }
 
-    private string GetFallbackMotivation(UserHabitAnalysisDto analysis)
-    {
-        var habitCount = analysis.CurrentHabits.Count;
-        var checkInCount = analysis.RecentCheckIns.Count;
-        var completionRate = analysis.Patterns.AverageCompletionRate;
-        
-        if (habitCount == 0)
-        {
-            return "Welcome to your habit journey! Every great achievement starts with a single step. You're about to embark on an amazing adventure of self-improvement. Let's start building the habits that will transform your life!";
-        }
-        
-        if (completionRate >= 0.8)
-        {
-            return $"You're absolutely crushing it! With {habitCount} active habits and a {completionRate:P0} completion rate, you're showing incredible consistency. Keep up this amazing momentum - you're building the foundation for lasting change!";
-        }
-        
-        if (completionRate >= 0.5)
-        {
-            return $"Great progress! You have {habitCount} habits and you're completing them {completionRate:P0} of the time. That's solid consistency! Remember, every check-in counts - you're building momentum with each completed habit.";
-        }
-        
-        return $"You're on the right track! With {habitCount} habits started, you've taken the first step toward positive change. Every habit journey has ups and downs - what matters is that you keep showing up. Your future self will thank you for the effort you're putting in today!";
-    }
+
 } 
