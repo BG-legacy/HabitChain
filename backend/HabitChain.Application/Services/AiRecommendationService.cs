@@ -178,7 +178,17 @@ Consider their completion rate - if high, suggest more challenging combinations.
 
 Make each suggestion unique and explain how it specifically works with their current habit.
 
-Return as JSON array with properties: name, description, reasoning, frequency, targetDays, category, confidence, suggestedTime, difficulty";
+Return as JSON array with properties: name, description, reasoning, frequency, targetDays, category, confidence, suggestedTime, difficulty
+
+IMPORTANT: 
+- frequency must be one of: 'Daily', 'Weekly', 'Monthly', 'Custom'
+- targetDays must be a NUMBER (integer), not a string:
+  * For Daily habits: use 7 (every day of the week)
+  * For Weekly habits: use 1 (once per week)  
+  * For Monthly habits: use 1 (once per month)
+- difficulty must be one of: 'Easy', 'Moderate', 'Hard'
+- confidence should be a decimal between 0.0 and 1.0
+- suggestedTime must be one of: 'Morning', 'Afternoon', 'Evening'";
 
         var recommendations = await GenerateRecommendationsAsync(prompt);
         return recommendations;
@@ -293,7 +303,16 @@ Provide a VARIED mix that covers different life areas:
 
 Make each suggestion unique and achievable for beginners. Vary the difficulty levels and categories.
 
-Return as JSON array with properties: name, description, reasoning, frequency, targetDays, category, confidence, suggestedTime, difficulty";
+Return as JSON array with properties: name, description, reasoning, frequency, targetDays, category, confidence, suggestedTime, difficulty
+
+IMPORTANT: 
+- frequency must be one of: 'Daily', 'Weekly', 'Monthly', 'Custom'
+- targetDays must be a NUMBER (integer), not a string:
+  * For Daily habits: use 7 (every day of the week)
+  * For Weekly habits: use 1 (once per week)  
+  * For Monthly habits: use 1 (once per month)
+- difficulty must be one of: 'Easy', 'Moderate', 'Hard'
+- confidence should be a decimal between 0.0 and 1.0";
 
         return await GenerateRecommendationsAsync(prompt);
     }
@@ -346,7 +365,17 @@ Consider their completion rate ({analysis.Patterns.AverageCompletionRate:P0}) - 
 
 Make each recommendation unique and specific to their situation. Vary the difficulty levels, categories, and reasoning.
 
-Return as JSON array with properties: name, description, reasoning, frequency, targetDays, category, confidence, suggestedTime, difficulty";
+Return as JSON array with properties: name, description, reasoning, frequency, targetDays, category, confidence, suggestedTime, difficulty
+
+IMPORTANT: 
+- frequency must be one of: 'Daily', 'Weekly', 'Monthly', 'Custom'
+- targetDays must be a NUMBER (integer), not a string:
+  * For Daily habits: use 7 (every day of the week)
+  * For Weekly habits: use 1 (once per week)  
+  * For Monthly habits: use 1 (once per month)
+- difficulty must be one of: 'Easy', 'Moderate', 'Hard'
+- confidence should be a decimal between 0.0 and 1.0
+- suggestedTime must be one of: 'Morning', 'Afternoon', 'Evening'";
     }
 
     private List<string> GetMissingCategories(List<string> currentCategories)
