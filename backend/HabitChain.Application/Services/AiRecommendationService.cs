@@ -19,7 +19,7 @@ public class AiRecommendationService : IAiRecommendationService
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
-    private readonly OpenAIClient _openAIClient;
+    private readonly OpenAIClient? _openAIClient;
 
     public AiRecommendationService(
         IHabitRepository habitRepository,
@@ -143,20 +143,29 @@ Make it personal, encouraging, and actionable. Focus on their progress and poten
         }
 
         var userAnalysis = await GetUserHabitAnalysisAsync(userId);
+        var habitCategory = DetermineCategory(habit.Name, habit.Description);
         
         var prompt = $@"
-Based on this user's current habit and their overall pattern, suggest 3-5 complementary habits that would work well together:
+Based on this user's current habit and their overall pattern, suggest 5-7 complementary habits that would work well together. Provide VARIED suggestions that include:
 
 Current Habit: {habit.Name} ({habit.Description})
+Category: {habitCategory}
 Frequency: {habit.Frequency}
 User's Strong Categories: {string.Join(", ", userAnalysis.Patterns.StrongCategories)}
+User's Weak Categories: {string.Join(", ", userAnalysis.Patterns.WeakCategories)}
 User's Preferred Time: {userAnalysis.Patterns.PreferredTime}
+Completion Rate: {userAnalysis.Patterns.AverageCompletionRate:P0}
 
-Suggest habits that:
-1. Complement the current habit
-2. Build on their strengths
-3. Fit their schedule and preferences
-4. Are realistic and achievable
+Suggest a VARIED mix that includes:
+1. 1-2 habits that directly complement the current habit (same category or related)
+2. 1-2 habits that balance the current habit (different category but synergistic)
+3. 1 habit that addresses a weak area for the user
+4. 1 habit that builds on their strengths
+5. 1 habit that introduces a completely new category they haven't explored
+
+Consider their completion rate - if high, suggest more challenging combinations. If low, suggest easier, confidence-building habits.
+
+Make each suggestion unique and explain how it specifically works with their current habit.
 
 Return as JSON array with properties: name, description, reasoning, frequency, targetDays, category, confidence, suggestedTime, difficulty";
 
@@ -214,6 +223,14 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
             "reflection" => "#DDA0DD",
             "organization" => "#98D8C8",
             "productivity" => "#F7DC6F",
+            "social" => "#FF9FF3",
+            "creativity" => "#54A0FF",
+            "finance" => "#5F27CD",
+            "nutrition" => "#00D2D3",
+            "career" => "#FF9F43",
+            "hobbies" => "#10AC84",
+            "spirituality" => "#A55EEA",
+            "relationships" => "#FD79A8",
             _ => "#667eea"
         };
     }
@@ -230,6 +247,14 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
             "reflection" => "brain",
             "organization" => "clipboard",
             "productivity" => "zap",
+            "social" => "users",
+            "creativity" => "palette",
+            "finance" => "dollar-sign",
+            "nutrition" => "apple",
+            "career" => "briefcase",
+            "hobbies" => "gamepad",
+            "spirituality" => "pray",
+            "relationships" => "heart",
             _ => "target"
         };
     }
@@ -237,8 +262,16 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
     private async Task<List<HabitRecommendationDto>> GetStarterHabitsAsync()
     {
         var prompt = @"
-Suggest 5 beginner-friendly habits for someone just starting their habit journey. 
-Focus on simple, achievable habits that build momentum.
+Suggest 5-7 beginner-friendly habits for someone just starting their habit journey. 
+Provide a VARIED mix that covers different life areas:
+
+1. Physical health (exercise, nutrition, sleep)
+2. Mental wellness (mindfulness, learning, creativity)
+3. Personal development (organization, productivity, reflection)
+4. Social/relationships (communication, connection)
+5. Lifestyle (hobbies, self-care, spirituality)
+
+Make each suggestion unique and achievable for beginners. Vary the difficulty levels and categories.
 
 Return as JSON array with properties: name, description, reasoning, frequency, targetDays, category, confidence, suggestedTime, difficulty";
 
@@ -253,8 +286,20 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
         var recentActivity = string.Join("\n", analysis.RecentCheckIns.Take(10).Select(c => 
             $"- {c.HabitName}: {c.CompletedAt:MM/dd} (Day {c.StreakDay})"));
 
+        // Analyze user's current habit categories
+        var habitCategories = analysis.CurrentHabits
+            .Select(h => DetermineCategory(h.Name, h.Description))
+            .GroupBy(c => c)
+            .OrderByDescending(g => g.Count())
+            .Select(g => g.Key)
+            .ToList();
+
+        var missingCategories = GetMissingCategories(habitCategories);
+        var weakAreas = analysis.Patterns.WeakCategories;
+        var strongAreas = analysis.Patterns.StrongCategories;
+
         return $@"
-Based on this user's habit data, suggest 3-5 personalized habit recommendations:
+Based on this user's habit data, suggest 5-7 personalized habit recommendations that are varied and address different aspects of their life:
 
 User: {analysis.UserName}
 Current Habits ({analysis.CurrentHabits.Count}):
@@ -264,26 +309,44 @@ Recent Activity (last 30 days):
 {recentActivity}
 
 Patterns:
-- Strong Categories: {string.Join(", ", analysis.Patterns.StrongCategories)}
-- Weak Categories: {string.Join(", ", analysis.Patterns.WeakCategories)}
+- Strong Categories: {string.Join(", ", strongAreas)}
+- Weak Categories: {string.Join(", ", weakAreas)}
+- Missing Categories: {string.Join(", ", missingCategories)}
 - Preferred Time: {analysis.Patterns.PreferredTime}
 - Average Completion Rate: {analysis.Patterns.AverageCompletionRate:P0}
 
-Suggest habits that:
-1. Build on their existing strengths
-2. Address areas for improvement
-3. Fit their schedule and preferences
-4. Are realistic and achievable
-5. Complement their current routine
+Provide a VARIED mix of recommendations that include:
+1. 1-2 habits that build on their strengths (categories they excel in)
+2. 1-2 habits that address their weak areas
+3. 1-2 habits from missing categories they haven't explored
+4. 1 habit that complements their current routine
+5. 1 habit that challenges them slightly beyond their comfort zone
+
+Consider their completion rate ({analysis.Patterns.AverageCompletionRate:P0}) - if it's high, suggest more challenging habits. If it's low, suggest easier, confidence-building habits.
+
+Make each recommendation unique and specific to their situation. Vary the difficulty levels, categories, and reasoning.
 
 Return as JSON array with properties: name, description, reasoning, frequency, targetDays, category, confidence, suggestedTime, difficulty";
+    }
+
+    private List<string> GetMissingCategories(List<string> currentCategories)
+    {
+        var allCategories = new List<string> 
+        { 
+            "Fitness", "Health", "Learning", "Wellness", "Sleep", 
+            "Reflection", "Organization", "Productivity", "Social", 
+            "Creativity", "Finance", "Mindfulness", "Nutrition", 
+            "Career", "Relationships", "Hobbies", "Spirituality" 
+        };
+        
+        return allCategories.Except(currentCategories, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
     private async Task<List<HabitRecommendationDto>> GenerateRecommendationsAsync(string prompt)
     {
         if (_openAIClient == null)
         {
-            return GetFallbackRecommendations();
+            return new List<HabitRecommendationDto>(); // Return empty list instead of fallbacks
         }
         
         try
@@ -302,7 +365,7 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
             var content = response.Value.Content[0].Text ?? string.Empty;
             if (string.IsNullOrEmpty(content))
             {
-                return GetFallbackRecommendations();
+                return new List<HabitRecommendationDto>(); // Return empty list instead of fallbacks
             }
 
             // Try to parse JSON response
@@ -313,19 +376,19 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
                     PropertyNameCaseInsensitive = true
                 });
                 
-                return recommendations ?? GetFallbackRecommendations();
+                return recommendations ?? new List<HabitRecommendationDto>(); // Return empty list instead of fallbacks
             }
             catch (JsonException)
             {
-                // If JSON parsing fails, return fallback recommendations
-                return GetFallbackRecommendations();
+                // If JSON parsing fails, return empty list
+                return new List<HabitRecommendationDto>();
             }
         }
         catch (Exception ex)
         {
             // Log the error (in a real application, use proper logging)
             Console.WriteLine($"Error generating AI recommendations: {ex.Message}");
-            return GetFallbackRecommendations();
+            return new List<HabitRecommendationDto>(); // Return empty list instead of fallbacks
         }
     }
 
@@ -378,67 +441,103 @@ Return as JSON array with properties: name, description, reasoning, frequency, t
     {
         var text = $"{name} {description}".ToLower();
         
-        if (text.Contains("exercise") || text.Contains("workout") || text.Contains("gym") || text.Contains("run"))
+        // Physical Health & Fitness
+        if (text.Contains("exercise") || text.Contains("workout") || text.Contains("gym") || 
+            text.Contains("run") || text.Contains("jog") || text.Contains("walk") ||
+            text.Contains("cardio") || text.Contains("strength") || text.Contains("yoga") ||
+            text.Contains("pilates") || text.Contains("swim") || text.Contains("bike") ||
+            text.Contains("dance") || text.Contains("sport"))
             return "Fitness";
-        if (text.Contains("read") || text.Contains("book") || text.Contains("study"))
-            return "Learning";
-        if (text.Contains("meditation") || text.Contains("mindfulness") || text.Contains("yoga"))
-            return "Wellness";
-        if (text.Contains("water") || text.Contains("drink") || text.Contains("hydration"))
+            
+        // Health & Nutrition
+        if (text.Contains("water") || text.Contains("drink") || text.Contains("hydration") ||
+            text.Contains("vitamin") || text.Contains("supplement") || text.Contains("medication") ||
+            text.Contains("checkup") || text.Contains("doctor") || text.Contains("health"))
             return "Health";
-        if (text.Contains("sleep") || text.Contains("bed") || text.Contains("rest"))
+            
+        // Learning & Education
+        if (text.Contains("read") || text.Contains("book") || text.Contains("study") ||
+            text.Contains("learn") || text.Contains("course") || text.Contains("language") ||
+            text.Contains("skill") || text.Contains("practice") || text.Contains("research"))
+            return "Learning";
+            
+        // Mental Wellness & Mindfulness
+        if (text.Contains("meditation") || text.Contains("mindfulness") || text.Contains("breathing") ||
+            text.Contains("gratitude") || text.Contains("positive") || text.Contains("mental") ||
+            text.Contains("therapy") || text.Contains("counseling") || text.Contains("self-care"))
+            return "Wellness";
+            
+        // Sleep & Rest
+        if (text.Contains("sleep") || text.Contains("bed") || text.Contains("rest") ||
+            text.Contains("nap") || text.Contains("wake") || text.Contains("dream"))
             return "Sleep";
-        if (text.Contains("journal") || text.Contains("write") || text.Contains("reflect"))
+            
+        // Reflection & Journaling
+        if (text.Contains("journal") || text.Contains("write") || text.Contains("reflect") ||
+            text.Contains("diary") || text.Contains("log") || text.Contains("note"))
             return "Reflection";
-        if (text.Contains("clean") || text.Contains("organize") || text.Contains("tidy"))
+            
+        // Organization & Planning
+        if (text.Contains("clean") || text.Contains("organize") || text.Contains("tidy") ||
+            text.Contains("plan") || text.Contains("schedule") || text.Contains("declutter") ||
+            text.Contains("sort") || text.Contains("arrange"))
             return "Organization";
-        if (text.Contains("code") || text.Contains("program") || text.Contains("develop"))
+            
+        // Productivity & Work
+        if (text.Contains("code") || text.Contains("program") || text.Contains("develop") ||
+            text.Contains("work") || text.Contains("project") || text.Contains("task") ||
+            text.Contains("focus") || text.Contains("pomodoro") || text.Contains("time"))
             return "Productivity";
+            
+        // Social & Relationships
+        if (text.Contains("call") || text.Contains("text") || text.Contains("message") ||
+            text.Contains("friend") || text.Contains("family") || text.Contains("social") ||
+            text.Contains("meet") || text.Contains("connect") || text.Contains("relationship"))
+            return "Social";
+            
+        // Creativity & Arts
+        if (text.Contains("draw") || text.Contains("paint") || text.Contains("create") ||
+            text.Contains("art") || text.Contains("music") || text.Contains("craft") ||
+            text.Contains("design") || text.Contains("write") || text.Contains("poem"))
+            return "Creativity";
+            
+        // Finance & Money
+        if (text.Contains("budget") || text.Contains("save") || text.Contains("money") ||
+            text.Contains("finance") || text.Contains("invest") || text.Contains("expense") ||
+            text.Contains("track") || text.Contains("spend"))
+            return "Finance";
+            
+        // Nutrition & Diet
+        if (text.Contains("eat") || text.Contains("meal") || text.Contains("food") ||
+            text.Contains("diet") || text.Contains("nutrition") || text.Contains("cook") ||
+            text.Contains("breakfast") || text.Contains("lunch") || text.Contains("dinner"))
+            return "Nutrition";
+            
+        // Career & Professional
+        if (text.Contains("career") || text.Contains("job") || text.Contains("work") ||
+            text.Contains("professional") || text.Contains("network") || text.Contains("resume") ||
+            text.Contains("interview") || text.Contains("promotion"))
+            return "Career";
+            
+        // Hobbies & Interests
+        if (text.Contains("hobby") || text.Contains("game") || text.Contains("play") ||
+            text.Contains("collect") || text.Contains("garden") || text.Contains("photography") ||
+            text.Contains("travel") || text.Contains("explore"))
+            return "Hobbies";
+            
+        // Spirituality & Religion
+        if (text.Contains("pray") || text.Contains("worship") || text.Contains("spiritual") ||
+            text.Contains("church") || text.Contains("temple") || text.Contains("meditation") ||
+            text.Contains("blessing") || text.Contains("gratitude"))
+            return "Spirituality";
+            
+        // Relationships & Family
+        if (text.Contains("partner") || text.Contains("spouse") || text.Contains("marriage") ||
+            text.Contains("parent") || text.Contains("child") || text.Contains("family") ||
+            text.Contains("date") || text.Contains("romance"))
+            return "Relationships";
         
         return "General";
-    }
-
-    private List<HabitRecommendationDto> GetFallbackRecommendations()
-    {
-        return new List<HabitRecommendationDto>
-        {
-            new HabitRecommendationDto
-            {
-                Name = "Morning Hydration",
-                Description = "Drink a glass of water first thing in the morning",
-                Reasoning = "A simple habit that improves health and creates a positive start to your day",
-                Frequency = "Daily",
-                TargetDays = 1,
-                Category = "Health",
-                Confidence = 0.9,
-                SuggestedTime = "Morning",
-                Difficulty = "Easy"
-            },
-            new HabitRecommendationDto
-            {
-                Name = "Evening Reflection",
-                Description = "Spend 5 minutes reflecting on your day and planning tomorrow",
-                Reasoning = "Helps build self-awareness and sets you up for success",
-                Frequency = "Daily",
-                TargetDays = 1,
-                Category = "Reflection",
-                Confidence = 0.8,
-                SuggestedTime = "Evening",
-                Difficulty = "Easy"
-            },
-            new HabitRecommendationDto
-            {
-                Name = "Daily Reading",
-                Description = "Read for at least 15 minutes each day",
-                Reasoning = "Builds knowledge and creates a consistent learning habit",
-                Frequency = "Daily",
-                TargetDays = 1,
-                Category = "Learning",
-                Confidence = 0.7,
-                SuggestedTime = "Flexible",
-                Difficulty = "Medium"
-            }
-        };
     }
 
     private string GetFallbackMotivation(UserHabitAnalysisDto analysis)

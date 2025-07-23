@@ -96,6 +96,14 @@ const AiRecommendations: React.FC<AiRecommendationsProps> = ({
       case 'reflection': return '🤔';
       case 'organization': return '📋';
       case 'productivity': return '⚡';
+      case 'social': return '👥';
+      case 'creativity': return '🎨';
+      case 'finance': return '💰';
+      case 'nutrition': return '🍎';
+      case 'career': return '💼';
+      case 'hobbies': return '🎮';
+      case 'spirituality': return '🙏';
+      case 'relationships': return '💕';
       default: return '🎯';
     }
   };
